@@ -43,6 +43,7 @@ input,select{width:100%;font:inherit;padding:6px 8px;border-radius:6px;border:1p
 .its{margin-top:10px}.its>button{margin-top:8px;width:100%;border-style:dashed;color:var(--ac);font-weight:700}
 .tt{font-size:12px;margin-top:6px;color:var(--mut);text-align:right}
 .gs{font-size:12px;background:rgba(255,255,255,.2);border-radius:6px;padding:5px 10px}
+.cfg{display:flex;gap:8px;padding:0 16px 12px;flex-wrap:wrap;align-items:center}.cfg input{flex:1;min-width:230px;margin:0}.cfg.ok{display:none}#cmsg{font-size:13px;color:var(--red)}
 .empty{color:var(--mut);font-size:13px;padding:4px}
 .foot{padding:0 16px 32px}
 .panel{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .35s ease,margin .35s}
@@ -78,7 +79,8 @@ th{background:#fff;font-weight:700}.tb td{background:#0070c0;color:#fff;font-wei
   <div class="gs" id="gs">Google Sheets: conectando…</div>
   <button class="y" id="add">+ Nuevo pedido</button>
 </header>
-<div class="note">Versión de prueba: los datos viven solo en esta pantalla. Cada paso requiere confirmación de una persona.</div>
+<div class="note">Versión 3 · Cada paso requiere confirmación de una persona.</div>
+<div class="cfg" id="cfg"><input id="url" placeholder="Pega aquí la URL de Apps Script (https://script.google.com/macros/s/…/exec)"><button class="p" id="conn">Conectar</button><span id="cmsg"></span></div>
 <div class="board" id="board"></div>
 <div class="foot">
   <button class="p" id="sum">📋 Resumir en plantilla de cobranza</button>
@@ -197,6 +199,15 @@ function card(i){
 /* ---------- Google Sheets (conector del usuario) ---------- */
 var SHEET={id:"1B6wR-tO_ChCoeDWXyXeoJG37bmzW_pTOh3T_DoBi1Dg",tab:"Hoja 1",hdr:4,first:7,srv:"Google Sheets"},mcp=null,nextRow=SHEET.first;
 function setGs(t){$("#gs").textContent=t}
+$("#gs").style.cursor="pointer";$("#gs").title="Clic para mostrar u ocultar la URL";
+$("#gs").onclick=function(){$("#cfg").classList.toggle("ok")};
+$("#conn").onclick=function(){
+  var u=$("#url").value.trim();
+  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){$("#cmsg").textContent="La URL debe empezar con https://script.google.com y terminar en /exec";return}
+  SCRIPT_URL=u;gsMode=null;$("#cmsg").textContent="";
+  try{localStorage.setItem("gsurl",u)}catch(e){}
+  setGs("Conectando…");gsInit();
+};
 async function gsArgs(tool,x){
   var d=await mcp.describeTool(SHEET.srv,tool),pr=(d.inputSchema&&d.inputSchema.properties)||{},o={};
   Object.keys(pr).forEach(function(k){var l=k.toLowerCase();
@@ -221,17 +232,23 @@ async function gsRead(){
   nextRow=Math.max(SHEET.hdr+last+1,SHEET.first);
   var dl=$("#att");dl.textContent="";Object.keys(att).forEach(function(a){var o=el("option");o.value=a;dl.appendChild(o)});
 }
-var SCRIPT_URL="",TOKEN="CAMBIA-ESTA-CLAVE",gsMode=null; /* pega aquí la URL del Apps Script */
+var SCRIPT_URL="",gsMode=null; /* opcional: puedes pegar aquí la URL; o usa el botón de arriba */
+try{SCRIPT_URL=SCRIPT_URL||localStorage.getItem("gsurl")||""}catch(e){}
 function fillAtt(list){var dl=$("#att");dl.textContent="";(list||[]).forEach(function(a){var o=el("option");o.value=a;dl.appendChild(o)})}
 async function gsInit(){
+  var cfg=$("#cfg");$("#url").value=SCRIPT_URL;
   try{
-    if(typeof claude!=="undefined"&&(mcp=await claude.use("mcp"))){gsMode="mcp";await gsRead();setGs("📗 Conectado a Google Sheets");return}
+    if(typeof claude!=="undefined"&&(mcp=await claude.use("mcp"))){gsMode="mcp";cfg.classList.add("ok");await gsRead();setGs("📗 Conectado a Google Sheets");return}
     mcp=null;
-    if(!SCRIPT_URL){setGs("⚠ Falta la URL del Apps Script");return}
-    var r=await fetch(SCRIPT_URL+"?token="+encodeURIComponent(TOKEN)).then(function(x){return x.json()});
+    if(!SCRIPT_URL){cfg.classList.remove("ok");setGs("⚠ Sin conexión: pega la URL abajo");return}
+    var r=await fetch(SCRIPT_URL).then(function(x){return x.json()});
     if(!r.ok)throw new Error(r.error||"sin respuesta");
-    gsMode="script";fillAtt(r.atencion);setGs("📗 Conectado a Google Sheets");
-  }catch(e){gsMode=gsMode==="script"?"script":null;setGs(e&&e.code==="server_not_connected"?"⚠ Conecta Google Sheets en Claude":"⚠ Sheets: "+((e&&e.message)||"error"))}
+    gsMode="script";fillAtt(r.atencion);cfg.classList.add("ok");setGs("📗 Conectado a Google Sheets (clic para cambiar URL)");
+  }catch(e){
+    gsMode=null;cfg.classList.remove("ok");setGs("⚠ No conectado");
+    var m=(e&&e.message)||"error";
+    $("#cmsg").textContent=/fetch|NetworkError|Load failed|JSON|Unexpected token/i.test(m)?"No se pudo leer el script. Revisa: implementación como Aplicación web, acceso «Cualquier persona», y URL terminada en /exec.":m;
+  }
 }
 async function gsSave(i){
   if(!gsMode&&SCRIPT_URL)gsMode="script";
@@ -243,7 +260,7 @@ async function gsSave(i){
       await gsRead();var n=nextRow;
       await mcp.callTool(SHEET.srv,"update_values",await gsArgs("update_values",{range:"'"+SHEET.tab+"'!B"+n+":F"+n,values:[row]}));
     }else{
-      var r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:TOKEN,row:row})}).then(function(x){return x.json()});
+      var r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({row:row})}).then(function(x){return x.json()});
       if(!r.ok)throw new Error(r.error||"no guardó");
     }
     i.gs="ok";setGs("📗 Conectado a Google Sheets");
