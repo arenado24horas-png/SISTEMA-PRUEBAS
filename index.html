@@ -183,7 +183,7 @@ function card(i){
   }else if(mode==="paid"){ask("La deuda solo se elimina si confirmas que prosigue.",function(){go(i,{status:"cobrado"})});
   }else if(i.status==="pedido"){
     btn("Pasar a desarrollo →","p",function(){setUi(i,"dev")});btn("Eliminar","d",function(){setUi(i,"del")});
-    if(i.gs==="err"||i.gs==="off"){if(mcp)btn("Reintentar Sheets",null,function(){gsSave(i)});btn("Copiar fila",null,function(){copyRow(i)})}
+    if(i.gs==="err"||i.gs==="off"){if(gsMode||SCRIPT_URL)btn("Reintentar Sheets",null,function(){gsSave(i)});btn("Copiar fila",null,function(){copyRow(i)})}
   }else if(i.status==="desarrollo"){
     btn("A cumplimiento →","p",function(){setUi(i,"cum")});btn("← Volver",null,function(){go(i,{status:"pedido"},"back")});btn("Eliminar","d",function(){setUi(i,"del")});
   }else if(i.status==="cumplimiento"){
@@ -221,18 +221,31 @@ async function gsRead(){
   nextRow=Math.max(SHEET.hdr+last+1,SHEET.first);
   var dl=$("#att");dl.textContent="";Object.keys(att).forEach(function(a){var o=el("option");o.value=a;dl.appendChild(o)});
 }
+var SCRIPT_URL="",TOKEN="CAMBIA-ESTA-CLAVE",gsMode=null; /* pega aquí la URL del Apps Script */
+function fillAtt(list){var dl=$("#att");dl.textContent="";(list||[]).forEach(function(a){var o=el("option");o.value=a;dl.appendChild(o)})}
 async function gsInit(){
   try{
-    if(typeof claude==="undefined"||!(mcp=await claude.use("mcp"))){mcp=null;setGs("⚠ Sheets sin conexión");return}
-    await gsRead();setGs("📗 Conectado a Google Sheets");
-  }catch(e){setGs(e&&e.code==="server_not_connected"?"⚠ Conecta Google Sheets en Claude":"⚠ Sheets: "+((e&&e.message)||"error"))}
+    if(typeof claude!=="undefined"&&(mcp=await claude.use("mcp"))){gsMode="mcp";await gsRead();setGs("📗 Conectado a Google Sheets");return}
+    mcp=null;
+    if(!SCRIPT_URL){setGs("⚠ Falta la URL del Apps Script");return}
+    var r=await fetch(SCRIPT_URL+"?token="+encodeURIComponent(TOKEN)).then(function(x){return x.json()});
+    if(!r.ok)throw new Error(r.error||"sin respuesta");
+    gsMode="script";fillAtt(r.atencion);setGs("📗 Conectado a Google Sheets");
+  }catch(e){gsMode=gsMode==="script"?"script":null;setGs(e&&e.code==="server_not_connected"?"⚠ Conecta Google Sheets en Claude":"⚠ Sheets: "+((e&&e.message)||"error"))}
 }
 async function gsSave(i){
-  if(!mcp){i.gs="off";render();return}
+  if(!gsMode&&SCRIPT_URL)gsMode="script";
+  if(!gsMode){i.gs="off";render();return}
   i.gs="wait";render();
   try{
-    await gsRead();var n=nextRow;
-    await mcp.callTool(SHEET.srv,"update_values",await gsArgs("update_values",{range:"'"+SHEET.tab+"'!B"+n+":F"+n,values:[[i.name,i.ruc||"",i.atencion||"",i.tel||"",i.correo||""]]}));
+    var row=[i.name,i.ruc||"",i.atencion||"",i.tel||"",i.correo||""];
+    if(gsMode==="mcp"){
+      await gsRead();var n=nextRow;
+      await mcp.callTool(SHEET.srv,"update_values",await gsArgs("update_values",{range:"'"+SHEET.tab+"'!B"+n+":F"+n,values:[row]}));
+    }else{
+      var r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:TOKEN,row:row})}).then(function(x){return x.json()});
+      if(!r.ok)throw new Error(r.error||"no guardó");
+    }
     i.gs="ok";setGs("📗 Conectado a Google Sheets");
   }catch(e){i.gs="err";i.gsMsg=(e&&(e.message||e.code))||"error"}
   render();
