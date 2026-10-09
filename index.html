@@ -5,53 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bloc de pedidos · Arenado 24 Horas</title>
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f6fa;--card:#fff;--tx:#111;--mut:#5d6b7a;--bd:#c9d3de;--ac:#0070c0;--red:#c0281c;--yl:#ffff00}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171c;--card:#1c232b;--tx:#e8edf2;--mut:#93a0ad;--bd:#36414d;--red:#ff7b6e}}
-:root[data-theme="dark"]{--bg:#12171c;--card:#1c232b;--tx:#e8edf2;--mut:#93a0ad;--bd:#36414d;--red:#ff7b6e}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 Arial,Helvetica,sans-serif}
-header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--ac);color:#fff;border-bottom:4px solid var(--yl)}
-h1{font-size:19px;margin:0}
-.debt{background:var(--yl);color:#000;border-radius:6px;padding:7px 14px;font-weight:700;transition:transform .3s}
-.debt.pop{transform:scale(1.08)}
-.note{padding:10px 16px;color:var(--mut);font-size:13px}
-button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:6px;padding:6px 12px;transition:transform .12s}
-button:active{transform:scale(.95)}
-button.p{background:var(--ac);border-color:var(--ac);color:#fff}
-button.y{background:var(--yl);border-color:#000;color:#000;font-weight:700}
-button.d{color:var(--red)}
-.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:0 16px 20px;align-items:start}
-.col{border:1px solid var(--bd);border-radius:8px;padding:0 10px 4px;min-height:110px;background:color-mix(in srgb,var(--bd) 20%,transparent)}
-.col h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;background:var(--ac);color:#fff;margin:0 -10px 10px;padding:7px 10px;border-radius:7px 7px 0 0;display:flex;justify-content:space-between}
-.card{background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:6px;padding:11px;margin-bottom:10px;transition:transform .3s ease,opacity .3s ease}
-.card.in{animation:in .4s ease}
-.card.out{transform:translateX(36px);opacity:0}.card.back{transform:translateX(-36px);opacity:0}.card.gone{transform:scale(.8);opacity:0}
-@keyframes in{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
-.m{color:var(--mut);font-size:13px;margin-top:2px}
-.pr{font-weight:700;color:var(--ac);margin-top:6px}
-.tag{display:inline-block;font-size:12px;border-radius:4px;padding:2px 8px;margin-top:6px;background:var(--bg);color:var(--mut)}
-.tag.debt2{background:var(--yl);color:#000;font-weight:700;animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{50%{opacity:.65}}
-.act{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;animation:in .25s ease}
-.ask{margin-top:10px;font-size:13px;animation:in .25s ease}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;animation:in .25s ease}
-.fl{display:block;font-size:11px;color:var(--mut)}.fl.wide{grid-column:1/-1}
-input,select{width:100%;font:inherit;padding:6px 8px;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin-top:2px}
-.ir{display:grid;grid-template-columns:1fr 1fr 1fr 30px;gap:6px;margin-top:8px;padding:8px;border:1px dashed var(--bd);border-radius:6px;animation:in .25s ease}
-.ir .w{grid-column:1/-1}.ir button{padding:0}
-.its{margin-top:10px}.its>button{margin-top:8px;width:100%;border-style:dashed;color:var(--ac);font-weight:700}
-.tt{font-size:12px;margin-top:6px;color:var(--mut);text-align:right}
-.gs{font-size:12px;background:rgba(255,255,255,.2);border-radius:6px;padding:5px 10px}
-.cfg{display:flex;gap:8px;padding:0 16px 12px;flex-wrap:wrap;align-items:center}.cfg input{flex:1;min-width:230px;margin:0}.cfg.ok{display:none}#cmsg{font-size:13px;color:var(--red)}
-a.y{font-size:13px;text-decoration:none;border:1px solid #000;border-radius:6px;padding:6px 10px;background:var(--yl);color:#000;font-weight:700}
-.empty{color:var(--mut);font-size:13px;padding:4px}
-.foot{padding:0 16px 32px}
-.panel{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .35s ease,margin .35s}
-.panel.open{max-height:2400px;opacity:1;margin-top:14px}
-.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.bar select{width:auto;max-width:100%}
-/* documento (siempre claro, estilo plantilla) */
-.doc{background:#fff;color:#000;border:1px solid #000;font-size:12px;max-width:760px}
+/* VARIABLES Y TEMA GENERAL */
+:root {
+  box-sizing: border-box;
+  --bg: #f4f7f6;
+  --card: #ffffff;
+  --tx: #2d3748;
+  --mut: #718096;
+  --bd: #e2e8f0;
+  --ac: #3182ce;
+  --ac-hover: #2b6cb0;
+  --red: #e53e3e;
+  --yl: #ecc94b;
+  --green: #38a169;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: inherit; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--tx); line-height: 1.5; font-size: 15px; }
+
+/* HEADER */
+header {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  padding: 16px 24px; background: #1a365d; color: #fff; border-bottom: 4px solid var(--yl);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+h1 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+#current-user { font-size: 13px; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; }
+.debt { background: var(--yl); color: #000; border-radius: 8px; padding: 8px 16px; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+
+/* BOTONES */
+button { font: inherit; cursor: pointer; border: 1px solid var(--bd); background: var(--card); color: var(--tx); border-radius: 6px; padding: 8px 14px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+button:hover { background: #f7fafc; border-color: #cbd5e0; }
+button:active { transform: scale(0.96); }
+button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+button.p { background: var(--ac); border-color: var(--ac); color: #fff; }
+button.p:hover { background: var(--ac-hover); border-color: var(--ac-hover); }
+button.y { background: var(--yl); border-color: #d69e2e; color: #000; font-weight: 700; }
+button.y:hover { background: #d69e2e; }
+button.d { color: var(--red); border-color: transparent; background: #fff5f5; }
+button.d:hover { background: #fed7d7; }
+
+/* TEXTOS Y ESTILOS AUXILIARES */
+.note { padding: 12px 24px; color: var(--mut); font-size: 13px; background: #ebf8ff; border-bottom: 1px solid #bee3f8; margin-bottom: 16px; display: flex; justify-content: space-between; }
+.gs-status { font-size: 12px; font-weight: 600; color: var(--ac); }
+.gs-status.ok { color: var(--green); }
+.gs-status.wait { color: #dd6b20; }
+.gs-status.err { color: var(--red); }
+
+/* TABLERO Y COLUMNAS */
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 0 24px 30px; align-items: start; }
+.col { border: 1px solid var(--bd); border-radius: 10px; padding: 0 12px 8px; min-height: 200px; background: #edf2f7; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+.col h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; background: #2b6cb0; color: #fff; margin: 0 -12px 12px; padding: 10px 14px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; }
+.empty { color: var(--mut); font-size: 13px; text-align: center; padding: 16px; font-style: italic; }
+
+/* TARJETAS */
+.card { background: var(--card); border: 1px solid var(--bd); border-left: 5px solid var(--ac); border-radius: 8px; padding: 14px; margin-bottom: 12px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.card.in { animation: slideIn 0.3s ease-out; }
+.card.out { transform: translateX(36px); opacity: 0; pointer-events: none; }
+.card.back { transform: translateX(-36px); opacity: 0; pointer-events: none; }
+.card.gone { transform: scale(0.9); opacity: 0; pointer-events: none; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.m { color: var(--mut); font-size: 13px; margin-top: 4px; }
+.pr { font-weight: 700; color: var(--ac); margin-top: 8px; font-size: 14px; background: #ebf8ff; padding: 6px; border-radius: 4px; display: inline-block; }
+
+/* ETIQUETAS Y FORMULARIOS */
+.tag { display: inline-block; font-size: 12px; border-radius: 4px; padding: 4px 8px; margin-top: 8px; background: #e2e8f0; color: var(--tx); font-weight: 600; }
+.tag.debt2 { background: var(--yl); color: #000; animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(236,201,75,0.7); } 70% { box-shadow: 0 0 0 6px rgba(236,201,75,0); } 100% { box-shadow: 0 0 0 0 rgba(236,201,75,0); } }
+.act { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; border-top: 1px solid var(--bd); padding-top: 12px; }
+.ask { margin-top: 10px; font-size: 14px; font-weight: 500; color: var(--tx); }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.fl { display: block; font-size: 12px; color: var(--mut); font-weight: 600; }
+.fl.wide { grid-column: 1 / -1; }
+input, select { width: 100%; font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e0; background: #fff; color: var(--tx); margin-top: 4px; transition: border-color 0.2s; }
+input:focus, select:focus { outline: none; border-color: var(--ac); box-shadow: 0 0 0 3px rgba(49,130,206,0.1); }
+input[readonly] { background: #edf2f7; cursor: not-allowed; border-style: dashed; }
+.ir { display: grid; grid-template-columns: 1fr 1fr 1fr 34px; gap: 8px; margin-top: 10px; padding: 10px; border: 1px dashed #cbd5e0; border-radius: 8px; background: #f7fafc; }
+.ir .w { grid-column: 1 / -1; }
+.ir button { padding: 0; border-radius: 4px; }
+.its { margin-top: 12px; }
+.its > button { margin-top: 10px; width: 100%; border-style: dashed; color: var(--ac); font-weight: 600; background: transparent; }
+.its > button:hover { background: #ebf8ff; }
+.tt { font-size: 13px; margin-top: 8px; color: var(--tx); text-align: right; font-weight: 600; }
+
+/* MODAL DE LOGIN */
+#login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
+.login-box { background: var(--card); padding: 32px; border-radius: 12px; width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--bd); }
+.login-box h2 { margin-top: 0; font-size: 20px; color: var(--ac); text-align: center; }
+.login-err { color: var(--red); font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600; }
+.login-toggle { font-size: 13px; color: var(--ac); text-align: center; margin-top: 16px; cursor: pointer; font-weight: 600; }
+.login-toggle:hover { text-decoration: underline; }
+
+/* PANEL INFERIOR Y COBRANZA */
+.foot { padding: 0 24px 32px; }
+.panel { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.3s ease, margin 0.3s; }
+.panel.open { max-height: 3000px; opacity: 1; margin-top: 16px; }
+.bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; background: #fff; padding: 12px; border-radius: 8px; border: 1px solid var(--bd); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.bar select { width: auto; max-width: 100%; margin-top: 0; }
+
+.doc{background:#fff;color:#000;border:1px solid #000;font-size:12px;max-width:760px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
 .dh{display:flex;align-items:center;gap:14px;padding:12px;border-bottom:1px solid #000}
 .bdg{flex:none;width:86px;height:86px;border-radius:50%;background:#0070c0;border:5px solid #f2b705;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;line-height:1.1}
 .bdg b{font-size:15px;letter-spacing:1px}.bdg small{font-size:9px;background:#f2b705;color:#000;padding:0 5px;border-radius:2px}
@@ -70,40 +124,93 @@ th{background:#fff;font-weight:700}.tb td{background:#0070c0;color:#fff;font-wei
 .ac{display:grid;grid-template-columns:1.4fr 1fr;border:1px solid #000;border-top:0}.ac div{padding:6px 10px;font-weight:700}
 .ac i{display:flex;align-items:center;justify-content:center;font-weight:700}
 .cf{background:#0070c0;color:#fff;text-align:center;font-weight:700;padding:10px;border:1px solid #000;border-top:0}
-@media print{body>*:not(.foot),.foot>*:not(.panel),.bar{display:none}.foot{padding:0}.panel{max-height:none;opacity:1}.doc{border:0;max-width:none}}
+@media print {
+  body { background: #fff; }
+  header, .note, .board, .foot > button, .bar { display: none !important; }
+  .foot { padding: 0; }
+  .panel { max-height: none; opacity: 1; margin: 0; }
+  .doc { border: 0; max-width: none; box-shadow: none; margin: 0; }
+}
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<!-- MODAL DE LOGIN / REGISTRO -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2 id="l-title">🔒 Iniciar Sesión</h2>
+    <div class="m" id="l-desc" style="text-align:center;margin-bottom:16px;">Acceso seguro a Arenado 24H</div>
+    
+    <label class="fl"><span>Usuario</span><input type="text" id="l-user" placeholder="Ej. ANGIE"></label>
+    <label class="fl" style="margin-top:10px"><span>Contraseña</span><input type="password" id="l-pass" placeholder="••••••"></label>
+    
+    <div id="register-fields" style="display:none; margin-top:10px;">
+      <label class="fl"><span>Nivel de Acceso</span>
+        <select id="l-access">
+          <option value="TOTALIDAD DE LA PAGINA">Totalidad (Admin)</option>
+          <option value="REGISTRO DE CLIENTES Y ENVIADO A DESARROLLO">Solo Registro</option>
+          <option value="SOLO DESARROLLO Y CUMPLIMIENTO">Solo Desarrollo</option>
+        </select>
+      </label>
+    </div>
+
+    <button class="p" id="l-btn" style="width:100%;margin-top:20px" disabled>⏳ Conectando con Google Sheets...</button>
+    <div class="login-err" id="l-err"></div>
+    <div class="login-toggle" id="l-toggle">¿No tienes cuenta? Crear una nueva</div>
+  </div>
+</div>
+
 <header>
-  <h1>📒 Bloc de pedidos · Arenado 24 Horas</h1>
-  <div id="debt" class="debt">Deuda pendiente: S/. 0,00</div>
-  <div class="gs" id="gs">Google Sheets: conectando…</div>
-  <a class="y" id="open" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/1B6wR-tO_ChCoeDWXyXeoJG37bmzW_pTOh3T_DoBi1Dg/edit?usp=drive_link">📄 Abrir Google Sheets</a>
-  <button class="y" id="add">+ Nuevo pedido</button>
+  <h1>📒 Bloc de Pedidos <span id="current-user"></span></h1>
+  <div class="header-actions">
+    <div id="debt" class="debt">Deuda: S/. 0,00</div>
+    <button class="y" id="add">➕ Nuevo Pedido</button>
+    <button id="sync-btn" title="Refrescar datos de Google Sheets">🔄</button>
+  </div>
 </header>
-<div class="note">Versión 3 · Cada paso requiere confirmación de una persona.</div>
-<div class="cfg" id="cfg"><input id="url" placeholder="Pega aquí la URL de Apps Script (https://script.google.com/macros/s/…/exec)"><button class="p" id="conn">Conectar</button><span id="cmsg"></span></div>
+
+<div class="note">
+  <span>💡 Tablero colaborativo sincronizado en la Nube.</span>
+  <span class="gs-status" id="gs">Conectando...</span>
+</div>
+
 <div class="board" id="board"></div>
+
 <div class="foot">
-  <button class="p" id="sum">📋 Resumir en plantilla de cobranza</button>
+  <button class="p" id="sum" style="font-size: 16px; padding: 10px 20px;">📄 Generar Plantilla de Cobranza</button>
   <div class="panel" id="panel">
-    <div class="bar"><select id="sel"></select><button class="p" id="print">Imprimir / PDF</button><button id="copy">Copiar mensaje</button><button id="hide">Cerrar</button></div>
+    <div class="bar">
+      <select id="sel"></select>
+      <button class="p" id="print">🖨️ Imprimir / PDF</button>
+      <button id="copy">📋 Copiar Texto</button>
+      <button class="d" id="hide">✖ Cerrar</button>
+    </div>
     <div id="docbox"></div>
   </div>
 </div>
 
-<datalist id="sug"><option value="Servicio de arenado al metal blanco"><option value="Pintura epóxica"><option value="Pintura de acabado"><option value="Limpieza y desengrase"><option value="Mano de obra"><option value="Materiales e insumos"><option value="Transporte / flete"><option value="Certificado de calidad"></datalist>
+<datalist id="sug">
+  <option value="Servicio de arenado al metal blanco">
+  <option value="Servicio de arenado comercial">
+  <option value="Pintura epóxica">
+  <option value="Pintura de acabado">
+  <option value="Limpieza y desengrase">
+  <option value="Mano de obra">
+  <option value="Transporte / flete">
+  <option value="Certificado de calidad">
+</datalist>
 <datalist id="att"></datalist>
+
 <script>
 (function(){
-var E={name:"ARENADO 24 HORAS SAC",ruc:"20611755407",ofi:"Edificio Anglo Peruano 7mo Piso - Centro de Lima",sede:"Calle Los Alisos - Los Alamos - Puente Piedra",telf:"976476902",
-cuentas:["CTA BBVA SOLES : 00110752380200509926","CCI BBVA 01175200020050992638","CTA INTERBANK SOLES : 200-3005790547","CTA DE DETRACCION : 00026082293"],
-consid:["No incluye flete","Trabajo segun especificaciones enviadas por el cliente","Supervision de calidad permanente","Los trabajos se realizaran en nuestra planta","Incluye certificado de calidad"]};
-var COLS=[["pedido","1 · Pedidos"],["desarrollo","2 · Desarrollo"],["cumplimiento","3 · Cumplimiento"],["cobrado","4 · Cerrados"]];
-var NEWF=[["name","Cliente (Sres.) *","text","",1],["ruc","RUC"],["atencion","Atención"],["tel","Telf."],["correo","Correo","email","",1]];
-var DEVA=[["num","N° presupuesto","text","0000 - 00"],["elab","Elaborado por"],["proyecto","Proyecto","text","",1]];
-var DEVB=[["adelanto","Adelanto recibido (S/)","number","0"],["terminos","Términos","text","",1]];
-var items=[],ui=null,n=0,shown=0,busy=false;
+var COLS=[["pedido","📝 1 · Ingreso de Pedidos"],["desarrollo","⚙️ 2 · En Desarrollo"],["cumplimiento","✅ 3 · Cumplimiento"],["cobrado","💰 4 · Cerrados / Cobrados"]];
+var NEWF=[["name","Cliente (Sres.) *","text","",1],["ruc","RUC"],["atencion","Encargado (Auto)"],["tel","Telf."],["correo","Correo","email","",1]];
+var DEVA=[["num","N° Presupuesto","text","Ej: 0001 - 26"],["elab","Elaborado por (Auto)"],["proyecto","Proyecto","text","",1]];
+var DEVB=[["adelanto","Adelanto (S/)","number","0"],["terminos","Términos","text","",1]];
+
+var items=[], ui=null, n=0, shown=0, busy=false, registeredUsers=[], loggedUser=null, loggedUserAccess="";
 var $=function(s){return document.querySelector(s)};
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function num(v){return Number(v).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -111,44 +218,100 @@ function money(v){return "S/. "+num(v||0)}
 function calc(i){var s=(i.items||[]).reduce(function(a,t){return a+t.qty*t.pu},0),g=s*.18,t=s+g,a=Number(i.adelanto)||0;return{sub:s,igv:g,tot:t,adel:a,sal:Math.max(0,t-a)}}
 function pending(){return items.filter(function(i){return i.status==="cumplimiento"&&i.done})}
 function debt(){return pending().reduce(function(s,i){return s+calc(i).sal},0)}
-function today(){var d=new Date(),p=function(x){return String(x).padStart(2,"0")};return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()}
+function today(){var d=new Date(),p=function(x){return String(x).padStart(2,"0")};return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes())}
 
 function tween(to){var from=shown,t0=performance.now(),d=$("#debt");d.classList.add("pop");setTimeout(function(){d.classList.remove("pop")},300);
-(function f(t){var k=Math.min(1,(t-t0)/450);shown=from+(to-from)*k;d.textContent="Deuda pendiente: "+money(shown);if(k<1)requestAnimationFrame(f)})(t0)}
+(function f(t){var k=Math.min(1,(t-t0)/450);shown=from+(to-from)*k;d.textContent="Deuda: "+money(shown);if(k<1)requestAnimationFrame(f)})(t0)}
 
 function render(enterId){
   var b=$("#board");b.textContent="";
-  COLS.forEach(function(c){
+  var acc = (loggedUserAccess || "").toUpperCase();
+  var isReg = acc.indexOf("REGISTRO") > -1;
+  var isDev = acc.indexOf("CUMPLIMIENTO") > -1 || acc.indexOf("DESARROLLO") > -1;
+  var isTot = acc.indexOf("TOTALIDAD") > -1 || (!isReg && !isDev); 
+
+  $("#add").style.display = (isTot || isReg) ? "flex" : "none";
+  $("#sum").style.display = isTot ? "flex" : "none";
+  $("#debt").style.display = isTot ? "block" : "none";
+  
+  var visibleCols = COLS.filter(function(c){
+    if(isTot) return true; 
+    if(isReg) return c[0] === "pedido"; 
+    if(isDev) return c[0] === "desarrollo" || c[0] === "cumplimiento"; 
+    return false;
+  });
+
+  visibleCols.forEach(function(c){
     var list=items.filter(function(i){return i.status===c[0]});
     var s=el("section","col"),h=el("h2");h.appendChild(el("span",null,c[1]));h.appendChild(el("span",null,String(list.length)));s.appendChild(h);
-    if(!list.length)s.appendChild(el("div","empty","—"));
+    if(!list.length)s.appendChild(el("div","empty","Sin tarjetas activas"));
     list.forEach(function(i){var k=card(i);if(i.id===enterId)k.classList.add("in");s.appendChild(k)});
     b.appendChild(s);
   });
   var dd=debt();if(Math.abs(dd-shown)>0.001)tween(dd);
-  if($("#panel").classList.contains("open"))fillSel();
 }
+
 function go(i,patch,cls){
   if(busy)return;busy=true;
   var e=document.querySelector('[data-id="'+i.id+'"]');if(e)e.classList.add(cls||"out");
-  setTimeout(function(){if(patch===null)items=items.filter(function(x){return x!==i});else Object.assign(i,patch);ui=null;busy=false;render(patch===null?null:i.id)},300);
+  setTimeout(function(){
+    if(patch===null){
+      items=items.filter(function(x){return x!==i});
+      gsDeleteTarjeta(i.id); 
+    }else{
+      Object.assign(i,patch);
+      if(patch.status==="cobrado" || (patch.status==="cumplimiento" && patch.done)){
+        gsSaveHistorico(i);
+      }
+      if(patch.status==="cobrado"){
+         gsDeleteTarjeta(i.id); 
+      } else {
+         gsSyncTarjeta(i); 
+      }
+    }
+    ui=null;busy=false;render(patch===null?null:i.id);
+  },300);
 }
 function setUi(i,m){ui={id:i.id,mode:m};render()}
-function form(d,defs,v){var g=el("div","g2"),r={};defs.forEach(function(f){var w=el("label","fl"+(f[4]?" wide":""));w.appendChild(el("span",null,f[1]));var x=el("input");x.type=f[2]||"text";if(f[2]==="number"){x.step="any";x.min="0"}x.placeholder=f[3]||"";x.value=v&&v[f[0]]!=null?v[f[0]]:"";w.appendChild(x);g.appendChild(w);r[f[0]]=x});d.appendChild(g);return r}
+
+function form(d,defs,v){
+  var g=el("div","g2"),r={};
+  defs.forEach(function(f){
+    var w=el("label","fl"+(f[4]?" wide":""));
+    w.appendChild(el("span",null,f[1]));
+    var x=el("input");
+    x.type=f[2]||"text";
+    if(f[2]==="number"){x.step="any";x.min="0"}
+    x.placeholder=f[3]||"";
+    
+    var val=v&&v[f[0]]!=null?v[f[0]]:"";
+    if(f[0]==="elab" || f[0]==="atencion"){
+      val = val || loggedUser || "";
+      x.readOnly = true;
+      x.title = "Se llena automáticamente con tu usuario";
+    }
+    x.value=val;
+    w.appendChild(x); g.appendChild(w); r[f[0]]=x
+  });
+  d.appendChild(g);
+  return r;
+}
 
 function itemsEd(d){
-  var box=el("div","its"),rows=[],tot=el("div","tt"),add=el("button",null,"+ Agregar ítem");
-  box.appendChild(el("div","m","Descripción / ítems del servicio *"));
+  var box=el("div","its"),rows=[],tot=el("div","tt"),add=el("button",null,"➕ Añadir Ítem al Presupuesto");
+  box.appendChild(el("div","m","Detalle de servicios:"));
   function upd(){var s=rows.reduce(function(a,o){return a+(parseFloat(o.q.value)||0)*(parseFloat(o.p.value)||0)},0);tot.textContent="Subtotal "+money(s)+" · IGV "+money(s*.18)+" · Total "+money(s*1.18)}
   function addRow(){
     var r=el("div","ir"),o={r:r};
     function mk(ph,type,cls,val){var x=el("input",cls);x.placeholder=ph;x.type=type;if(type==="number"){x.step="any";x.min="0"}if(val)x.value=val;r.appendChild(x);return x}
-    o.w=mk("Descripción (ej. servicio, material, mano de obra)","text","w");o.w.setAttribute("list","sug");
+    o.w=mk("Descripción del trabajo","text","w");o.w.setAttribute("list","sug");
     o.q=mk("Cant.","number");o.u=mk("Und.","text",null,"UND");o.p=mk("P.U. S/","number");
-    var x=el("button","d","✕");x.title="Quitar ítem";x.onclick=function(){if(rows.length<2)return;rows.splice(rows.indexOf(o),1);r.remove();upd()};r.appendChild(x);
-    rows.push(o);box.insertBefore(r,add);upd();return o;
+    var x=el("button","d","✖");x.onclick=function(){if(rows.length<2)return;rows.splice(rows.indexOf(o),1);r.remove();upd()};r.appendChild(x);
+    rows.push(o);box.insertBefore(r,add);upd();
+    setTimeout(function(){o.w.focus()},50);
+    return o;
   }
-  add.onclick=function(){addRow().w.focus()};
+  add.onclick=addRow;
   box.appendChild(add);box.appendChild(tot);box.oninput=upd;addRow();d.appendChild(box);
   return{get:function(){
     var out=[];
@@ -157,127 +320,212 @@ function itemsEd(d){
       out.push({work:o.w.value.trim(),qty:q,und:o.u.value.trim()||"UND",pu:p})}
     return out}};
 }
+
 function card(i){
   var d=el("div","card");d.dataset.id=i.id;
   var mode=ui&&ui.id===i.id?ui.mode:null,a=el("div","act");
   function btn(t,cls,fn){var x=el("button",cls,t);x.onclick=fn;a.appendChild(x)}
-  function ask(txt,fn){d.appendChild(el("div","ask",txt));btn("Sí, confirmar","p",fn);btn("Cancelar",null,function(){ui=null;render()})}
+  function ask(txt,fn){d.appendChild(el("div","ask",txt));btn("✅ Confirmar","p",fn);btn("✖ Cancelar",null,function(){ui=null;render()})}
+  
   if(mode==="name"){
-    var f=form(d,NEWF,i);f.atencion.setAttribute("list","att");setTimeout(function(){f.name.focus()},0);
-    btn("Guardar","p",function(){if(!f.name.value.trim()){f.name.focus();return}Object.keys(f).forEach(function(k){i[k]=f[k].value.trim()});ui=null;render();gsSave(i)});
+    var f=form(d,NEWF,i); setTimeout(function(){f.name.focus()},100);
+    btn("💾 Guardar Datos","p",function(){
+      if(!f.name.value.trim()){f.name.focus();return}
+      Object.keys(f).forEach(function(k){i[k]=f[k].value.trim()});
+      ui=null; render(); gsSaveCliente(i); gsSyncTarjeta(i);
+    });
     btn("Cancelar",null,function(){if(!i.name)items=items.filter(function(x){return x!==i});ui=null;render()});
     d.appendChild(a);return d;
   }
+  
   d.appendChild(el("b",null,i.name));
-  if(i.ruc)d.appendChild(el("div","m","RUC "+i.ruc));
-  if(i.gs)d.appendChild(el("div","m",i.gs==="ok"?"✓ Guardado en Google Sheets":i.gs==="wait"?"Guardando en Google Sheets…":"⚠ No se guardó en Sheets"+(i.gsMsg?" ("+i.gsMsg+")":"")));
-  if(i.items)i.items.forEach(function(t){d.appendChild(el("div","m","• "+t.work+" · "+t.qty+" "+t.und))});
+  if(i.ruc)d.appendChild(el("div","m","RUC: "+i.ruc));
+  if(i.atencion)d.appendChild(el("div","m","👤 Encargado: "+i.atencion));
+  
+  var statusBox = el("div","m");
+  statusBox.innerHTML = i.gs==="ok"?'<span class="gs-status ok">✓ En Nube</span>':i.gs==="wait"?'<span class="gs-status wait">⏳ Enviando...</span>':'';
+  d.appendChild(statusBox);
+
+  if(i.items)i.items.forEach(function(t){d.appendChild(el("div","m","• "+t.qty+" "+t.und+" - "+t.work))});
   var c=i.status!=="pedido"?calc(i):null;
-  if(c)d.appendChild(el("div","pr","Total "+money(c.tot)+(c.adel?" · Saldo "+money(c.sal):"")));
+  if(c)d.appendChild(el("div","pr","Total: "+money(c.tot)+(c.adel?" (Saldo: "+money(c.sal)+")":"")));
+  
   if(mode==="dev"){
     var w1=form(d,DEVA),ed=itemsEd(d),w2=form(d,DEVB,{terminos:"50% Adelanto y 50% Contra entrega"});
-    btn("Confirmar y pasar →","p",function(){
+    btn("💾 Guardar y Enviar ⏭️","p",function(){
       var it=ed.get();if(!it)return;
       var o={status:"desarrollo",items:it,work:it.map(function(t){return t.work}).join(" / "),adelanto:parseFloat(w2.adelanto.value)||0};
       ["num","elab","proyecto"].forEach(function(k){o[k]=w1[k].value.trim()});o.terminos=w2.terminos.value.trim();go(i,o);
     });btn("Cancelar",null,function(){ui=null;render()});
-  }else if(mode==="del"){ask(i.status==="pedido"?"¿Eliminar? No prosigue.":i.status==="desarrollo"?"¿Eliminar este trabajo acordado? Se pierde el precio y el detalle.":i.status==="cumplimiento"?"¿Eliminar este trabajo en ejecución? Aún no genera deuda.":"¿Eliminar este registro cerrado? Saldrá del resumen de cobranza.",function(){go(i,null,"gone")});
-  }else if(mode==="cum"){ask("¿Pasa a cumplimiento?",function(){go(i,{status:"cumplimiento",done:false})});
-  }else if(mode==="done"){ask("¿Trabajo terminado? Se registrará la deuda de "+money(c.sal)+" (incluye IGV).",function(){go(i,{done:true},"gone")});
-  }else if(mode==="paid"){ask("La deuda solo se elimina si confirmas que prosigue.",function(){go(i,{status:"cobrado"})});
+    
+  }else if(mode==="del"){ask("¿Deseas eliminar permanentemente?",function(){go(i,null,"gone")});
+  }else if(mode==="cum"){ask("¿Iniciar cumplimiento del trabajo?",function(){go(i,{status:"cumplimiento",done:false})});
+  }else if(mode==="done"){ask("¿Marcar trabajo como FINALIZADO?",function(){go(i,{done:true},"gone")});
+  }else if(mode==="paid"){ask("¿Confirmas que el pago fue recibido?",function(){go(i,{status:"cobrado"})});
+  
   }else if(i.status==="pedido"){
-    btn("Pasar a desarrollo →","p",function(){setUi(i,"dev")});btn("Eliminar","d",function(){setUi(i,"del")});
-    if(i.gs==="err"||i.gs==="off"){if(gsMode||SCRIPT_URL)btn("Reintentar Sheets",null,function(){gsSave(i)});btn("Copiar fila",null,function(){copyRow(i)})}
+    btn("⏭️ A Desarrollo","p",function(){setUi(i,"dev")}); btn("🗑️","d",function(){setUi(i,"del")});
   }else if(i.status==="desarrollo"){
-    btn("A cumplimiento →","p",function(){setUi(i,"cum")});btn("← Volver",null,function(){go(i,{status:"pedido"},"back")});btn("Eliminar","d",function(){setUi(i,"del")});
+    btn("⏭️ A Cumplimiento","p",function(){setUi(i,"cum")}); btn("⏪",null,function(){go(i,{status:"pedido"},"back")}); btn("🗑️","d",function(){setUi(i,"del")});
   }else if(i.status==="cumplimiento"){
-    if(!i.done){d.appendChild(el("span","tag","En ejecución"));
-      btn("Trabajo terminado ✓","p",function(){setUi(i,"done")});btn("← Volver",null,function(){go(i,{status:"desarrollo"},"back")});btn("Eliminar","d",function(){setUi(i,"del")});
-    }else{d.appendChild(el("span","tag debt2","Deuda pendiente"));btn("Prosigue →","p",function(){setUi(i,"paid")})}
-  }else{d.appendChild(el("span","tag","Cobrado"));btn("Eliminar","d",function(){setUi(i,"del")})}
+    if(!i.done){
+      d.appendChild(el("span","tag","⏳ En ejecución"));
+      btn("✅ Finalizar Trabajo","p",function(){setUi(i,"done")}); btn("⏪",null,function(){go(i,{status:"desarrollo"},"back")});
+    }else{
+      d.appendChild(el("span","tag debt2","⚠️ Pago Pendiente"));
+      btn("💰 Cobrar y Cerrar","p",function(){setUi(i,"paid")});
+    }
+  }else{
+    d.appendChild(el("span","tag","Cerrado")); btn("🗑️","d",function(){setUi(i,"del")});
+  }
+  
   if(a.children.length)d.appendChild(a);
   return d;
 }
-/* ---------- Google Sheets (conector del usuario) ---------- */
-var SHEET={id:"1B6wR-tO_ChCoeDWXyXeoJG37bmzW_pTOh3T_DoBi1Dg",tab:"Hoja 1",hdr:4,first:7,srv:"Google Sheets"},mcp=null,nextRow=SHEET.first;
-function setGs(t){$("#gs").textContent=t}
-$("#gs").style.cursor="pointer";$("#gs").title="Clic para mostrar u ocultar la URL";
-$("#gs").onclick=function(){$("#cfg").classList.toggle("ok")};
-$("#conn").onclick=function(){
-  var u=$("#url").value.trim();
-  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){$("#cmsg").textContent="La URL debe empezar con https://script.google.com y terminar en /exec";return}
-  SCRIPT_URL=u;gsMode=null;$("#cmsg").textContent="";
-  try{localStorage.setItem("gsurl",u)}catch(e){}
-  setGs("Conectando…");gsInit();
-};
-async function gsArgs(tool,x){
-  var d=await mcp.describeTool(SHEET.srv,tool),pr=(d.inputSchema&&d.inputSchema.properties)||{},o={};
-  Object.keys(pr).forEach(function(k){var l=k.toLowerCase();
-    if(/spreadsheet/.test(l)&&/id/.test(l))o[k]=SHEET.id;
-    else if(/range/.test(l))o[k]=x.range;
-    else if(/^values?$/.test(l)&&x.values)o[k]=x.values;
-    else if(/input/.test(l)&&/option/.test(l))o[k]="RAW"});
-  if(!Object.keys(o).length)throw new Error("esquema no reconocido");
-  return o;
+
+/* ---------- SINCRONIZACIÓN Y LOGICA PRINCIPAL ---------- */
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4uIn1M9RnLEOKmBqzgIZNpxu661MGWoSqbHnP3jrmIeBUXOmWTuAyz9q6yk9xOskD/exec"; 
+var isRegisterMode = false;
+
+function setGs(t, type){
+  var el = $("#gs");
+  el.textContent = t;
+  el.className = "gs-status " + (type||"");
 }
-function gsVals(r){
-  var s=r.structuredContent||r.payload;if(s&&s.values)return s.values;
-  var t=(r.content||[]).filter(function(c){return c.type==="text"}).map(function(c){return c.text}).join("");
-  try{var j=JSON.parse(t);return j.values||j}catch(e){return null}
-}
-async function gsRead(){
-  var r=await mcp.callTool(SHEET.srv,"get_values",await gsArgs("get_values",{range:"'"+SHEET.tab+"'!B"+SHEET.hdr+":F500"}));
-  var v=gsVals(r);if(!Array.isArray(v))throw new Error("respuesta no reconocida");
-  var last=0,att={};
-  v.forEach(function(row,k){if(row&&row.some(function(c){return String(c||"").trim()}))last=k;
-    if(SHEET.hdr+k>=SHEET.first&&row&&row[2])att[row[2]]=1});
-  nextRow=Math.max(SHEET.hdr+last+1,SHEET.first);
-  var dl=$("#att");dl.textContent="";Object.keys(att).forEach(function(a){var o=el("option");o.value=a;dl.appendChild(o)});
-}
-var SCRIPT_URL="",gsMode=null; /* opcional: puedes pegar aquí la URL; o usa el botón de arriba */
-try{SCRIPT_URL=SCRIPT_URL||localStorage.getItem("gsurl")||""}catch(e){}
-function fillAtt(list){var dl=$("#att");dl.textContent="";(list||[]).forEach(function(a){var o=el("option");o.value=a;dl.appendChild(o)})}
-async function gsInit(){
-  var cfg=$("#cfg");$("#url").value=SCRIPT_URL;
+
+$("#sync-btn").onclick = async function(){
+  var btn = $("#sync-btn");
+  btn.classList.add("spin");
+  setGs("Sincronizando...", "wait");
   try{
-    if(typeof claude!=="undefined"&&(mcp=await claude.use("mcp"))){gsMode="mcp";cfg.classList.add("ok");await gsRead();setGs("📗 Conectado a Google Sheets");return}
-    mcp=null;
-    if(!SCRIPT_URL){cfg.classList.remove("ok");setGs("⚠ Sin conexión: pega la URL abajo");return}
-    var r=await fetch(SCRIPT_URL).then(function(x){return x.json()});
-    if(!r.ok)throw new Error(r.error||"sin respuesta");
-    gsMode="script";fillAtt(r.atencion);cfg.classList.add("ok");setGs("📗 Conectado a Google Sheets (clic para cambiar URL)");
+    var r = await fetch(SCRIPT_URL + "?t=" + Date.now()).then(function(x){return x.json()});
+    if(r.ok){
+      items = r.activos || []; 
+      render();
+      setGs("Actualizado ✓", "ok");
+    } else {
+      setGs("⚠ Faltan permisos (Cualquier Persona)", "err");
+    }
+  }catch(e){setGs("⚠ Error de red", "err");}
+  finally{ btn.classList.remove("spin"); }
+};
+
+async function gsInit(){
+  try{
+    var res = await fetch(SCRIPT_URL + "?t=" + Date.now());
+    var text = await res.text();
+    
+    var r;
+    try { r = JSON.parse(text); } 
+    catch(err) { throw new Error("PERMISOS_DENEGADOS"); }
+    
+    if(!r.ok) throw new Error(r.error);
+
+    registeredUsers = r.usuarios || [];
+    items = r.activos || []; 
+    n = items.length > 0 ? Math.max.apply(Math, items.map(function(o){return parseInt(o.id.replace('c',''))||0})) : 0;
+    
+    setGs("Conexión Establecida", "ok");
+    var lBtn = $("#l-btn");
+    lBtn.textContent = "Iniciar Sesión";
+    lBtn.disabled = false;
   }catch(e){
-    gsMode=null;cfg.classList.remove("ok");setGs("⚠ No conectado");
-    var m=(e&&e.message)||"error";
-    $("#cmsg").textContent=/fetch|NetworkError|Load failed|JSON|Unexpected token/i.test(m)?"No se pudo leer el script. Revisa: implementación como Aplicación web, acceso «Cualquier persona», y URL terminada en /exec.":m;
+    setGs("⚠ Sin Conexión", "err");
+    var errText = (e.message === "PERMISOS_DENEGADOS") 
+      ? "⚠ Bloqueo: Ve a tu Apps Script y verifica que el acceso esté configurado a 'Cualquier persona'." 
+      : "Error al conectar. Verifica tu internet.";
+    $("#l-err").textContent = errText;
+    $("#l-btn").textContent = "Falló la conexión";
   }
 }
-async function gsSave(i){
-  if(!gsMode&&SCRIPT_URL)gsMode="script";
-  if(!gsMode){i.gs="off";render();return}
-  i.gs="wait";render();
+
+async function gsSaveCliente(i){
   try{
     var row=[i.name,i.ruc||"",i.atencion||"",i.tel||"",i.correo||""];
-    if(gsMode==="mcp"){
-      await gsRead();var n=nextRow;
-      await mcp.callTool(SHEET.srv,"update_values",await gsArgs("update_values",{range:"'"+SHEET.tab+"'!B"+n+":F"+n,values:[row]}));
-    }else{
-      var r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({row:row})}).then(function(x){return x.json()});
-      if(!r.ok)throw new Error(r.error||"no guardó");
-    }
-    i.gs="ok";setGs("📗 Conectado a Google Sheets");
-  }catch(e){i.gs="err";i.gsMsg=(e&&(e.message||e.code))||"error"}
+    await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "cliente", row: row})});
+  }catch(e){}
+}
+
+async function gsSaveHistorico(i){
+  try{
+    var c = calc(i);
+    var totalItems = (i.items||[]).map(function(t){return t.qty+" "+t.und+" de "+t.work}).join(", ");
+    var row=[today(), i.num||"S/N", i.elab||loggedUser, i.proyecto||i.work||"Servicio general", (i.items||[]).reduce(function(a,t){return a+t.qty},0), totalItems, c.tot, c.adel];
+    await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "historico", row: row})});
+  }catch(e){}
+}
+
+async function gsSyncTarjeta(i){
+  i.gs="wait"; render();
+  try{
+    var r = await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "sync_tarjeta", tarjeta: i})}).then(x=>x.json());
+    if(r.ok) i.gs="ok"; else i.gs="err";
+  }catch(e){i.gs="err";}
   render();
 }
-function copyRow(i){
-  var t=["",i.name,i.ruc||"",i.atencion||"",i.tel||"",i.correo||""].slice(1).join("\t");
-  var fb=function(){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove()};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).catch(fb);else fb();
-  setGs("Fila copiada: pégala en B"+nextRow+" del Sheets");
-}
-$("#add").onclick=function(){if(busy)return;var i={id:"c"+(++n),name:"",status:"pedido"};items.unshift(i);ui={id:i.id,mode:"name"};render(i.id)};
 
-/* ---------- plantilla de cobranza ---------- */
+async function gsDeleteTarjeta(id){
+  try{
+    await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "borrar_tarjeta", id: id})});
+  }catch(e){}
+}
+
+/* Modal de Login */
+$("#l-toggle").onclick = function(){
+  isRegisterMode = !isRegisterMode;
+  $("#l-title").textContent = isRegisterMode ? "📝 Crear Cuenta" : "🔒 Iniciar Sesión";
+  $("#l-desc").textContent = isRegisterMode ? "Añade un nuevo miembro al equipo" : "Acceso seguro a Arenado 24H";
+  $("#l-btn").textContent = isRegisterMode ? "Crear y Entrar" : "Iniciar Sesión";
+  $("#register-fields").style.display = isRegisterMode ? "block" : "none";
+  $("#l-toggle").textContent = isRegisterMode ? "Ya tengo cuenta. Iniciar sesión." : "¿No tienes cuenta? Crear una nueva";
+  $("#l-err").textContent = "";
+};
+
+$("#l-btn").onclick = async function(){
+  var uInput = $("#l-user").value.trim().toUpperCase();
+  var pInput = $("#l-pass").value.trim();
+  
+  if(!uInput || !pInput){
+    $("#l-err").textContent = "Ingresa usuario y contraseña.";
+    return;
+  }
+
+  if(isRegisterMode){
+    $("#l-btn").disabled = true;
+    $("#l-btn").textContent = "Guardando...";
+    var accInput = $("#l-access").value;
+    
+    try{
+      await fetch(SCRIPT_URL, {
+        method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"},
+        body: JSON.stringify({tipo: "nuevo_usuario", user: uInput, pass: pInput, access: accInput})
+      });
+      registeredUsers.push({user: uInput, pass: pInput, access: accInput});
+      loggedUser = uInput;
+      loggedUserAccess = accInput;
+      $("#current-user").textContent = "👤 " + uInput + " (" + accInput.split(" ")[0] + ")";
+      $("#login-overlay").style.display = "none";
+      render();
+    }catch(e){
+      $("#l-err").textContent = "Error al crear cuenta.";
+      $("#l-btn").disabled = false;
+      $("#l-btn").textContent = "Crear y Entrar";
+    }
+  } else {
+    var found = registeredUsers.find(function(u){return u.user === uInput && u.pass === pInput});
+    if(found){
+      loggedUser = found.user;
+      loggedUserAccess = found.access;
+      $("#current-user").textContent = "👤 " + found.user + " (" + found.access.split(" ")[0] + ")";
+      $("#login-overlay").style.display = "none";
+      render();
+    } else {
+      $("#l-err").textContent = "Credenciales incorrectas.";
+    }
+  }
+};
+
+/* Plantilla Cobranza */
 function fillSel(){
   var s=$("#sel"),p=pending(),old=s.value;s.textContent="";
   if(p.length>1){var o=el("option",null,"Todos los pendientes ("+p.length+")");o.value="all";s.appendChild(o)}
@@ -286,7 +534,7 @@ function fillSel(){
   showDoc();
 }
 function sel(){var p=pending(),v=$("#sel").value;return v==="all"||!v?p:p.filter(function(i){return i.id===v})}
-function showDoc(){var b=$("#docbox");b.textContent="";var l=sel();if(!l.length){b.appendChild(el("div","empty","No hay deudas pendientes: aún no hay trabajos terminados sin cobrar."));return}b.appendChild(buildDoc(l))}
+function showDoc(){var b=$("#docbox");b.textContent="";var l=sel();if(!l.length){b.appendChild(el("div","empty","No hay deudas pendientes."));return}b.appendChild(buildDoc(l))}
 function T(tag,cls,txt,kids){var e=el(tag,cls,txt);(kids||[]).forEach(function(k){e.appendChild(k)});return e}
 function buildDoc(l){
   var one=l.length===1,x=l[0],S={sub:0,igv:0,tot:0,adel:0,sal:0};
@@ -297,8 +545,8 @@ function buildDoc(l){
   d.appendChild(el("div","pn","Presupuesto "+(one&&x.num?x.num:"—")+"  ·  ESTADO DE CUENTA / COBRANZA"));
   function P(a,b){return T("p",null,null,[T("span",null,a),document.createTextNode(b||"")])}
   d.appendChild(T("div","inf",null,[
-    T("div",null,null,[P("Sres:",one?x.name:"Varios clientes"),P("RUC:",one?x.ruc:""),P("Atención:",one?x.atencion:""),P("Telf.",one?x.tel:""),P("Correo:",one?x.correo:""),P("Proyecto:",one?(x.proyecto||x.work):"Varios")]),
-    T("div","r",null,[P("Fecha",today()),P("Términos",one?x.terminos:""),P("Elaborado",one?x.elab:""),P("Telf",E.telf)])]));
+    T("div","r",null,[P("Sres:",one?x.name:"Varios"),P("RUC:",one?x.ruc:""),P("Encargado:",one?x.atencion:""),P("Telf.",one?x.tel:""),P("Correo:",one?x.correo:""),P("Proyecto:",one?(x.proyecto||x.work):"Varios")]),
+    T("div","r",null,[P("Fecha",today().split(" ")[0]),P("Términos",one?x.terminos:""),P("Elaborado",one?x.elab:""),P("Telf",E.telf)])]));
   var t=el("table"),th=el("tr");["Item","Descripción","Cantidad","Und.","P. U.","P.P"].forEach(function(h){th.appendChild(el("th",null,h))});t.appendChild(th);
   l.forEach(function(i,k){
     var tb=el("tr","tb"),c=calc(i);tb.appendChild(el("td",null,String(k+1)));var tt=el("td",null,(one?"":i.name+" · ")+(i.proyecto||i.items[0].work));tt.colSpan=5;tb.appendChild(tt);t.appendChild(tb);
@@ -311,26 +559,29 @@ function buildDoc(l){
   var cs=el("div","cons");cs.appendChild(T("u",null,"Consideraciones de la oferta:"));
   E.consid.forEach(function(c,j){cs.appendChild(el("p",null,String.fromCharCode(97+j)+") "+c))});d.appendChild(cs);
   d.appendChild(el("div","cu","CUENTAS DE DEPOSITO"));
-  d.appendChild(T("div","ac",null,[T("div",null,null,E.cuentas.map(function(c){return el("p",null,c)})),el("i",null,"Dpto. Costos y presupuestos")]));
+  d.appendChild(T("div","ac",null,[T("div","r",null,E.cuentas.map(function(c){return el("p",null,c)})),el("i",null,"Dpto. Costos y presupuestos")]));
   d.appendChild(el("div","cf","¡CONFIA EN LOS EXPERTOS!"));
   return d;
-}
-function msg(l){
-  var L=["Estimados "+(l.length===1?l[0].name:"señores")+": les recordamos el saldo pendiente de pago.",""];
-  l.forEach(function(i){var c=calc(i);L.push("• "+(i.num?"Presupuesto "+i.num+" – ":"")+i.work+" ("+i.name+"): total "+money(c.tot)+", adelanto "+money(c.adel)+", saldo "+money(c.sal))});
-  L.push("","TOTAL A PAGAR: "+money(l.reduce(function(s,i){return s+calc(i).sal},0)),"","Cuentas de depósito:");E.cuentas.forEach(function(c){L.push(c)});
-  L.push("","Gracias. — "+E.name+" · Telf. "+E.telf);return L.join("\n");
 }
 $("#sum").onclick=function(){fillSel();$("#panel").classList.add("open");setTimeout(function(){$("#panel").scrollIntoView({behavior:"smooth",block:"start"})},200)};
 $("#sel").onchange=showDoc;
 $("#hide").onclick=function(){$("#panel").classList.remove("open")};
 $("#print").onclick=function(){try{window.print()}catch(e){}};
 $("#copy").onclick=function(){
-  var b=$("#copy"),l=sel();if(!l.length)return;var t=msg(l),ok=function(){b.textContent="¡Copiado ✓!";setTimeout(function(){b.textContent="Copiar mensaje"},1500)};
-  var fb=function(){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();ok()};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb();
+  var b=$("#copy"),l=sel();if(!l.length)return;var t="Resumen de deudas",ok=function(){b.textContent="¡Copiado ✓!";setTimeout(function(){b.textContent="📋 Copiar Texto"},1500)};
+  var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();ok();
 };
-render();gsInit();
+
+$("#add").onclick=function(){
+  if(busy)return;
+  var i={id:"c"+(++n),name:"",status:"pedido"};
+  items.unshift(i);
+  ui={id:i.id,mode:"name"};
+  render(i.id);
+  setTimeout(()=> { document.querySelector('.card.in input').focus(); }, 300);
+};
+
+gsInit();
 })();
 </script>
 </body>
