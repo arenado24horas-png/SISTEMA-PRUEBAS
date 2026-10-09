@@ -1,131 +1,630 @@
-function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var output = { ok: true, clientes: [], usuarios: [], activos: [] };
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bloc de pedidos · Arenado 24 Horas</title>
+<style>
+/* VARIABLES Y TEMA GENERAL */
+:root { box-sizing: border-box; --bg: #f4f7f6; --card: #ffffff; --tx: #2d3748; --mut: #718096; --bd: #e2e8f0; --ac: #3182ce; --ac-hover: #2b6cb0; --red: #e53e3e; --yl: #ecc94b; --green: #38a169; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+:root[data-theme="dark"] { --bg: #1a202c; --card: #2d3748; --tx: #e2e8f0; --mut: #a0aec0; --bd: #4a5568; --ac: #4299e1; --ac-hover: #63b3ed; }
+* { box-sizing: inherit; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--tx); line-height: 1.5; font-size: 15px; transition: background 0.3s, color 0.3s; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px 24px; background: #1a365d; color: #fff; border-bottom: 4px solid var(--yl); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+h1 { font-size: 20px; display: flex; align-items: center; gap: 10px; margin: 0; }
+#current-user { font-size: 13px; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: background 0.2s; }
+#current-user:hover { background: rgba(255,255,255,0.25); }
+.debt { background: var(--yl); color: #000; border-radius: 8px; padding: 8px 16px; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+button { font: inherit; cursor: pointer; border: 1px solid var(--bd); background: var(--card); color: var(--tx); border-radius: 6px; padding: 8px 14px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+button:hover { background: color-mix(in srgb, var(--bg) 80%, var(--card)); border-color: var(--mut); }
+button:active { transform: scale(0.96); }
+button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+button.p { background: var(--ac); border-color: var(--ac); color: #fff; }
+button.p:hover { background: var(--ac-hover); border-color: var(--ac-hover); }
+button.y { background: var(--yl); border-color: #d69e2e; color: #000; font-weight: 700; }
+button.y:hover { background: #d69e2e; }
+button.d { color: var(--red); border-color: transparent; background: transparent; }
+button.d:hover { background: rgba(229, 62, 62, 0.1); }
+.note { padding: 12px 24px; color: var(--mut); font-size: 13px; background: color-mix(in srgb, var(--ac) 10%, var(--bg)); border-bottom: 1px solid var(--bd); margin-bottom: 16px; display: flex; justify-content: space-between; }
+.gs-status { font-size: 12px; font-weight: 600; color: var(--ac); }
+.gs-status.ok { color: var(--green); }
+.gs-status.wait { color: #dd6b20; }
+.gs-status.err { color: var(--red); }
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 0 24px 30px; align-items: start; }
+.col { border: 1px solid var(--bd); border-radius: 10px; padding: 0 12px 8px; min-height: 200px; background: color-mix(in srgb, var(--bg) 95%, var(--tx)); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+.col h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; background: #2b6cb0; color: #fff; margin: 0 -12px 12px; padding: 10px 14px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; }
+.empty { color: var(--mut); font-size: 13px; text-align: center; padding: 16px; font-style: italic; }
+.card { background: var(--card); border: 1px solid var(--bd); border-left: 5px solid var(--ac); border-radius: 8px; padding: 14px; margin-bottom: 12px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.card.in { animation: slideIn 0.3s ease-out; }
+.card.out { transform: translateX(36px); opacity: 0; pointer-events: none; }
+.card.back { transform: translateX(-36px); opacity: 0; pointer-events: none; }
+.card.gone { transform: scale(0.9); opacity: 0; pointer-events: none; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.m { color: var(--mut); font-size: 13px; margin-top: 4px; }
+.pr { font-weight: 700; color: var(--ac); margin-top: 8px; font-size: 14px; background: color-mix(in srgb, var(--ac) 10%, var(--card)); padding: 6px; border-radius: 4px; display: inline-block; }
+.tag { display: inline-block; font-size: 12px; border-radius: 4px; padding: 4px 8px; margin-top: 8px; background: var(--bd); color: var(--tx); font-weight: 600; }
+.tag.debt2 { background: var(--yl); color: #000; animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(236,201,75,0.7); } 70% { box-shadow: 0 0 0 6px rgba(236,201,75,0); } 100% { box-shadow: 0 0 0 0 rgba(236,201,75,0); } }
+.act { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; border-top: 1px solid var(--bd); padding-top: 12px; }
+.ask { margin-top: 10px; font-size: 14px; font-weight: 500; color: var(--tx); }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.fl { display: block; font-size: 12px; color: var(--mut); font-weight: 600; }
+.fl.wide { grid-column: 1 / -1; }
+input, select { width: 100%; font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--bd); background: var(--card); color: var(--tx); margin-top: 4px; transition: border-color 0.2s; }
+input:focus, select:focus { outline: none; border-color: var(--ac); box-shadow: 0 0 0 3px rgba(49,130,206,0.1); }
+input[readonly] { background: color-mix(in srgb, var(--bg) 80%, var(--card)); cursor: not-allowed; border-style: dashed; }
+.ir { display: grid; grid-template-columns: 1fr 1fr 1fr 34px; gap: 8px; margin-top: 10px; padding: 10px; border: 1px dashed var(--bd); border-radius: 8px; background: color-mix(in srgb, var(--bg) 50%, var(--card)); }
+.ir .w { grid-column: 1 / -1; }
+.ir button { padding: 0; border-radius: 4px; }
+.its { margin-top: 12px; }
+.its > button { margin-top: 10px; width: 100%; border-style: dashed; color: var(--ac); font-weight: 600; background: transparent; }
+.its > button:hover { background: color-mix(in srgb, var(--ac) 5%, var(--card)); }
+.tt { font-size: 13px; margin-top: 8px; color: var(--tx); text-align: right; font-weight: 600; }
+#login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
+.login-box { background: var(--card); padding: 32px; border-radius: 12px; width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--bd); }
+.login-box h2 { margin-top: 0; font-size: 20px; color: var(--ac); text-align: center; }
+.login-err { color: var(--red); font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600; }
+.login-toggle { font-size: 13px; color: var(--ac); text-align: center; margin-top: 16px; cursor: pointer; font-weight: 600; }
+.login-toggle:hover { text-decoration: underline; }
+.foot { padding: 0 24px 32px; }
+.panel { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.3s ease, margin 0.3s; }
+.panel.open { max-height: 3000px; opacity: 1; margin-top: 16px; }
+.bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--bd); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.bar select { width: auto; max-width: 100%; margin-top: 0; }
+.doc{background:#fff;color:#000;border:1px solid #000;font-size:12px;max-width:760px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+.dh{display:flex;align-items:center;gap:14px;padding:12px;border-bottom:1px solid #000}
+.bdg{flex:none;width:86px;height:86px;border-radius:50%;background:#0070c0;border:5px solid #f2b705;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;line-height:1.1}
+.bdg b{font-size:15px;letter-spacing:1px}.bdg small{font-size:9px;background:#f2b705;color:#000;padding:0 5px;border-radius:2px}
+.dh .c{flex:1;text-align:center}.dh .c b{font-size:17px}.dh .c div{margin-top:3px}
+.pn{font-weight:700;padding:3px 6px;border-bottom:1px solid #000}
+.inf{display:grid;grid-template-columns:1.5fr 1fr}.inf>div{padding:6px 8px}
+.inf .r{background:#0070c0;color:#fff}.inf p{margin:3px 0}.inf span{display:inline-block;min-width:70px;opacity:.85}
+table{width:100%;border-collapse:collapse}
+td,th{border:1px solid #000;padding:3px 6px}
+th{background:#fff;font-weight:700}.tb td{background:#0070c0;color:#fff;font-weight:700}
+.n{text-align:right;white-space:nowrap}
+.tot td.l{text-align:right;font-weight:700}.tot td.v{background:#0070c0;color:#fff;font-weight:700;text-align:right;white-space:nowrap}
+.tot.s td.v{background:#ffff00;color:#000}
+.cons{padding:6px 10px;border:1px solid #000;border-top:0}.cons u{font-weight:700}.cons p{margin:3px 0 3px 14px}
+.cu{background:#ffff00;text-align:center;font-weight:700;padding:3px;border:1px solid #000;border-top:0}
+.ac{display:grid;grid-template-columns:1.4fr 1fr;border:1px solid #000;border-top:0}.ac div{padding:6px 10px;font-weight:700}
+.ac i{display:flex;align-items:center;justify-content:center;font-weight:700}
+.cf{background:#0070c0;color:#fff;text-align:center;font-weight:700;padding:10px;border:1px solid #000;border-top:0}
+@media print { body { background: #fff; } header, .note, .board, .foot > button, .bar { display: none !important; } .foot { padding: 0; } .panel { max-height: none; opacity: 1; margin: 0; } .doc { border: 0; max-width: none; box-shadow: none; margin: 0; } }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- MODAL DE LOGIN / REGISTRO -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2 id="l-title">Iniciar Sesión</h2>
+    <div class="m" id="l-desc" style="text-align:center;margin-bottom:16px;">Acceso al sistema centralizado</div>
+    
+    <label class="fl"><span>Usuario</span><input type="text" id="l-user" placeholder="Ej. ANGIE"></label>
+    <label class="fl" style="margin-top:10px"><span>Contraseña</span><input type="password" id="l-pass" placeholder="••••••"></label>
+    
+    <div id="register-fields" style="display:none; margin-top:10px;">
+      <label class="fl"><span>Nivel de Acceso</span>
+        <select id="l-access">
+          <option value="TOTALIDAD DE LA PAGINA">Totalidad (Admin)</option>
+          <option value="REGISTRO DE CLIENTES Y ENVIADO A DESARROLLO">Solo Registro</option>
+          <option value="SOLO DESARROLLO Y CUMPLIMIENTO">Solo Desarrollo</option>
+        </select>
+      </label>
+    </div>
+
+    <button class="p" id="l-btn" style="width:100%;margin-top:20px">Conectando base de datos...</button>
+    <div class="login-err" id="l-err"></div>
+    <div class="login-toggle" id="l-toggle">Crear nueva cuenta</div>
+  </div>
+</div>
+
+<header>
+  <h1>Arenado 24 Horas <span id="current-user" title="Cerrar sesión"></span></h1>
+  <div class="header-actions">
+    <div id="debt" class="debt">Deuda: S/. 0,00</div>
+    <button class="y" id="add">Nuevo Pedido</button>
+    <button id="sync-btn" title="Refrescar datos">Actualizar</button>
+    <button id="theme-btn" title="Cambiar tema">Tema Oscuro</button>
+  </div>
+</header>
+
+<div class="note">
+  <span>Gestión operativa en vivo. Los datos se autocompletan desde el registro histórico.</span>
+  <span class="gs-status" id="gs">Cargando interfaz...</span>
+</div>
+
+<div class="board" id="board"></div>
+
+<div class="foot">
+  <button class="p" id="sum" style="font-size: 16px; padding: 10px 20px;">Generar Resumen de Cobranza</button>
+  <div class="panel" id="panel">
+    <div class="bar">
+      <select id="sel"></select>
+      <button class="p" id="print">Imprimir / PDF</button>
+      <button id="copy">Copiar Texto</button>
+      <button class="d" id="hide">Cerrar</button>
+    </div>
+    <div id="docbox"></div>
+  </div>
+</div>
+
+<datalist id="clients-list"></datalist>
+<datalist id="sug">
+  <option value="Servicio de arenado al metal blanco">
+  <option value="Servicio de arenado comercial">
+  <option value="Pintura epóxica">
+  <option value="Pintura de acabado">
+  <option value="Limpieza y desengrase">
+  <option value="Mano de obra">
+  <option value="Transporte / flete">
+  <option value="Certificado de calidad">
+</datalist>
+
+<script>
+(function(){
+// Configuración de Tema Claro / Oscuro
+var currentTheme = localStorage.getItem("theme") || "light";
+document.documentElement.setAttribute("data-theme", currentTheme);
+function updateThemeBtn() { $("#theme-btn").textContent = currentTheme === "dark" ? "Modo Claro" : "Modo Oscuro"; }
+updateThemeBtn();
+$("#theme-btn").onclick = function() {
+  currentTheme = currentTheme === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", currentTheme);
+  localStorage.setItem("theme", currentTheme);
+  updateThemeBtn();
+};
+
+var COLS=[["pedido","1 · Pedidos"],["desarrollo","2 · Desarrollo"],["cumplimiento","3 · Cumplimiento"],["cobrado","4 · Cerrados"]];
+var NEWF=[["name","Cliente (Sres.) *","text","",1],["ruc","RUC"],["atencion","Encargado (Auto)"],["tel","Telf."],["correo","Correo","email","",1]];
+var DEVA=[["num","N° Presupuesto","text","Ej: 0001 - 26"],["elab","Elaborado por (Auto)"],["proyecto","Proyecto","text","",1]];
+var DEVB=[["adelanto","Adelanto (S/)","number","0"],["terminos","Términos","text","",1]];
+
+var items=[], ui=null, n=0, shown=0, busy=false, registeredUsers=[], loggedUser=null, loggedUserAccess="", clientesDb=[];
+var $=function(s){return document.querySelector(s)};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function num(v){return Number(v).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function money(v){return "S/. "+num(v||0)}
+function calc(i){var s=(i.items||[]).reduce(function(a,t){return a+t.qty*t.pu},0),g=s*.18,t=s+g,a=Number(i.adelanto)||0;return{sub:s,igv:g,tot:t,adel:a,sal:Math.max(0,t-a)}}
+function pending(){return items.filter(function(i){return i.status==="cumplimiento"&&i.done})}
+function debt(){return pending().reduce(function(s,i){return s+calc(i).sal},0)}
+function today(){var d=new Date(),p=function(x){return String(x).padStart(2,"0")};return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes())}
+
+function tween(to){var from=shown,t0=performance.now(),d=$("#debt");d.classList.add("pop");setTimeout(function(){d.classList.remove("pop")},300);
+(function f(t){var k=Math.min(1,(t-t0)/450);shown=from+(to-from)*k;d.textContent="Deuda: "+money(shown);if(k<1)requestAnimationFrame(f)})(t0)}
+
+function render(enterId){
+  var b=$("#board");b.textContent="";
+  var acc = (loggedUserAccess || "").toUpperCase();
+  var isReg = acc.indexOf("REGISTRO") > -1;
+  var isDev = acc.indexOf("CUMPLIMIENTO") > -1 || acc.indexOf("DESARROLLO") > -1;
+  var isTot = acc.indexOf("TOTALIDAD") > -1 || (!isReg && !isDev); 
+
+  $("#add").style.display = (isTot || isReg) ? "flex" : "none";
+  $("#sum").style.display = isTot ? "flex" : "none";
+  $("#debt").style.display = isTot ? "block" : "none";
   
-  try {
-    // 1. Escanear TODO EL DIRECTORIO DE CLIENTES de una sola vez
-    var sheetC = ss.getSheetByName("BASE DE CLIENTES");
-    if(sheetC) {
-      var dataC = sheetC.getRange("B4:F1000").getValues();
-      for(var i=0; i<dataC.length; i++){
-        var nom = dataC[i][0];
-        if(nom && String(nom).trim() !== "" && String(nom).toUpperCase() !== "NOMBRE DE CLIENTE") {
-          output.clientes.push({
-            name: String(nom).trim(),
-            ruc: String(dataC[i][1] || "").trim(),
-            atencion: String(dataC[i][2] || "").trim(),
-            tel: String(dataC[i][3] || "").trim(),
-            correo: String(dataC[i][4] || "").trim()
-          });
-        }
-      }
-    }
-    
-    // 2. Escanear usuarios
-    var sheetU = ss.getSheetByName("USUARIOS (NO TOCAR)");
-    if(sheetU) {
-      var dataU = sheetU.getRange("B1:D200").getValues();
-      for(var j=0; j<dataU.length; j++){
-        var usr = dataU[j][0];
-        var pwd = dataU[j][1];
-        var acc = dataU[j][2];
-        if(usr && String(usr).trim() !== "" && String(usr).toUpperCase() !== "USUARIO") {
-          output.usuarios.push({
-            user: String(usr).trim().toUpperCase(),
-            pass: String(pwd).trim(),
-            access: acc ? String(acc).trim() : "TOTALIDAD DE LA PAGINA"
-          });
-        }
-      }
-    }
-    
-    // 3. Tarjetas Activas en Vivo
-    var sheetA = ss.getSheetByName("PEDIDOS ACTIVOS EN VIVO");
-    if(sheetA) {
-      var dataA = sheetA.getRange("A1:B1000").getValues();
-      for(var k=0; k<dataA.length; k++){ 
-        if(dataA[k][0] && dataA[k][1]){
-          try { output.activos.push(JSON.parse(dataA[k][1])); } catch(err){}
-        }
-      }
-    }
-  } catch(err) {
-    output.ok = false; output.error = err.toString();
-  }
-  return ContentService.createTextOutput(JSON.stringify(output)).setMimeType(ContentService.MimeType.JSON);
+  var visibleCols = COLS.filter(function(c){
+    if(isTot) return true; 
+    if(isReg) return c[0] === "pedido"; 
+    if(isDev) return c[0] === "desarrollo" || c[0] === "cumplimiento"; 
+    return false;
+  });
+
+  visibleCols.forEach(function(c){
+    var list=items.filter(function(i){return i.status===c[0]});
+    var s=el("section","col"),h=el("h2");h.appendChild(el("span",null,c[1]));h.appendChild(el("span",null,String(list.length)));s.appendChild(h);
+    if(!list.length)s.appendChild(el("div","empty","Sin tareas"));
+    list.forEach(function(i){var k=card(i);if(i.id===enterId)k.classList.add("in");s.appendChild(k)});
+    b.appendChild(s);
+  });
+  var dd=debt();if(Math.abs(dd-shown)>0.001)tween(dd);
 }
 
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var tipo = data.tipo;
-    
-    function getNextEmptyRowByColumnB(sheet) {
-      var vals = sheet.getRange("B1:B1000").getValues();
-      for(var i=vals.length-1; i>=0; i--){
-        if(vals[i][0] && String(vals[i][0]).trim() !== ""){
-          return i + 2; 
-        }
+function go(i,patch,cls){
+  if(busy)return;busy=true;
+  var e=document.querySelector('[data-id="'+i.id+'"]');if(e)e.classList.add(cls||"out");
+  setTimeout(function(){
+    if(patch===null){
+      items=items.filter(function(x){return x!==i});
+      gsDeleteTarjeta(i.id); 
+    }else{
+      Object.assign(i,patch);
+      if(patch.status==="cobrado" || (patch.status==="cumplimiento" && patch.done)){
+        gsSaveHistorico(i);
       }
-      return 4; 
-    }
-    
-    if (tipo === "nuevo_usuario") {
-      var sheetU = ss.getSheetByName("USUARIOS (NO TOCAR)");
-      var rU = getNextEmptyRowByColumnB(sheetU);
-      sheetU.getRange(rU, 2, 1, 3).setValues([[data.user, data.pass, data.access]]);
-      return ContentService.createTextOutput(JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    if (tipo === "sync_tarjeta") {
-      var sheetA = ss.getSheetByName("PEDIDOS ACTIVOS EN VIVO");
-      var id = data.tarjeta.id;
-      var dataA = sheetA.getRange("A1:A1000").getValues();
-      var found = false;
-      for(var i=0; i<dataA.length; i++){
-        if(dataA[i][0] === id){
-          sheetA.getRange(i+1, 2).setValue(JSON.stringify(data.tarjeta));
-          found = true; break;
-        }
+      if(patch.status==="cobrado"){
+         gsDeleteTarjeta(i.id); 
+      } else {
+         gsSyncTarjeta(i); 
       }
-      if(!found) {
-        var rA = 1;
-        for(var x=dataA.length-1; x>=0; x--){
-           if(dataA[x][0]) { rA = x + 2; break; }
+    }
+    ui=null;busy=false;render(patch===null?null:i.id);
+  },300);
+}
+function setUi(i,m){ui={id:i.id,mode:m};render()}
+
+// Autocompletado desde Base de Datos Local
+function form(d,defs,v){
+  var g=el("div","g2"),r={};
+  defs.forEach(function(f){
+    var w=el("label","fl"+(f[4]?" wide":""));
+    w.appendChild(el("span",null,f[1]));
+    var x=el("input");
+    x.type=f[2]||"text";
+    if(f[2]==="number"){x.step="any";x.min="0"}
+    x.placeholder=f[3]||"";
+    
+    var val=v&&v[f[0]]!=null?v[f[0]]:"";
+    if(f[0]==="elab" || f[0]==="atencion"){
+      val = val || loggedUser || "";
+      x.readOnly = true;
+    }
+    x.value=val;
+    
+    if(f[0]==="name") {
+      x.setAttribute("list", "clients-list");
+      x.addEventListener("change", function() {
+        var match = clientesDb.find(function(c) { return c.name.toUpperCase() === x.value.toUpperCase(); });
+        if(match) {
+          if(r.ruc && !r.ruc.value) r.ruc.value = match.ruc;
+          if(r.tel && !r.tel.value) r.tel.value = match.tel;
+          if(r.correo && !r.correo.value) r.correo.value = match.correo;
         }
-        sheetA.getRange(rA, 1, 1, 2).setValues([[id, JSON.stringify(data.tarjeta)]]);
+      });
+    }
+
+    w.appendChild(x); g.appendChild(w); r[f[0]]=x
+  });
+  d.appendChild(g);
+  return r;
+}
+
+function itemsEd(d){
+  var box=el("div","its"),rows=[],tot=el("div","tt"),add=el("button",null,"Añadir Ítem");
+  box.appendChild(el("div","m","Detalle de servicios:"));
+  function upd(){var s=rows.reduce(function(a,o){return a+(parseFloat(o.q.value)||0)*(parseFloat(o.p.value)||0)},0);tot.textContent="Subtotal "+money(s)+" · IGV "+money(s*.18)+" · Total "+money(s*1.18)}
+  function addRow(){
+    var r=el("div","ir"),o={r:r};
+    function mk(ph,type,cls,val){var x=el("input",cls);x.placeholder=ph;x.type=type;if(type==="number"){x.step="any";x.min="0"}if(val)x.value=val;r.appendChild(x);return x}
+    o.w=mk("Descripción del trabajo","text","w");o.w.setAttribute("list","sug");
+    o.q=mk("Cant.","number");o.u=mk("Und.","text",null,"UND");o.p=mk("P.U. S/","number");
+    var x=el("button","d","X");x.onclick=function(){if(rows.length<2)return;rows.splice(rows.indexOf(o),1);r.remove();upd()};r.appendChild(x);
+    rows.push(o);box.insertBefore(r,add);upd();
+    setTimeout(function(){o.w.focus()},50);
+    return o;
+  }
+  add.onclick=addRow;
+  box.appendChild(add);box.appendChild(tot);box.oninput=upd;addRow();d.appendChild(box);
+  return{get:function(){
+    var out=[];
+    for(var k=0;k<rows.length;k++){var o=rows[k],q=parseFloat(o.q.value),p=parseFloat(o.p.value);
+      if(!o.w.value.trim()){o.w.focus();return null}if(!(q>0)){o.q.focus();return null}if(isNaN(p)||p<0){o.p.focus();return null}
+      out.push({work:o.w.value.trim(),qty:q,und:o.u.value.trim()||"UND",pu:p})}
+    return out}};
+}
+
+function card(i){
+  var d=el("div","card");d.dataset.id=i.id;
+  var mode=ui&&ui.id===i.id?ui.mode:null,a=el("div","act");
+  function btn(t,cls,fn){var x=el("button",cls,t);x.onclick=fn;a.appendChild(x)}
+  function ask(txt,fn){d.appendChild(el("div","ask",txt));btn("Confirmar","p",fn);btn("Cancelar",null,function(){ui=null;render()})}
+  
+  if(mode==="name"){
+    var f=form(d,NEWF,i); setTimeout(function(){f.name.focus()},100);
+    btn("Guardar Cliente","p",function(){
+      if(!f.name.value.trim()){f.name.focus();return}
+      Object.keys(f).forEach(function(k){i[k]=f[k].value.trim()});
+      ui=null; render(); gsSaveCliente(i); gsSyncTarjeta(i);
+    });
+    btn("Cancelar",null,function(){if(!i.name)items=items.filter(function(x){return x!==i});ui=null;render()});
+    d.appendChild(a);return d;
+  }
+  
+  d.appendChild(el("b",null,i.name));
+  if(i.ruc)d.appendChild(el("div","m","RUC: "+i.ruc));
+  if(i.atencion)d.appendChild(el("div","m","Encargado: "+i.atencion));
+  
+  var statusBox = el("div","m");
+  statusBox.innerHTML = i.gs==="ok"?'<span class="gs-status ok">Sincronizado</span>':i.gs==="wait"?'<span class="gs-status wait">Guardando...</span>':'';
+  d.appendChild(statusBox);
+
+  if(i.items)i.items.forEach(function(t){d.appendChild(el("div","m","• "+t.qty+" "+t.und+" - "+t.work))});
+  var c=i.status!=="pedido"?calc(i):null;
+  if(c)d.appendChild(el("div","pr","Total: "+money(c.tot)+(c.adel?" (Saldo: "+money(c.sal)+")":"")));
+  
+  if(mode==="dev"){
+    var w1=form(d,DEVA),ed=itemsEd(d),w2=form(d,DEVB,{terminos:"50% Adelanto y 50% Contra entrega"});
+    btn("Guardar y Enviar","p",function(){
+      var it=ed.get();if(!it)return;
+      var o={status:"desarrollo",items:it,work:it.map(function(t){return t.work}).join(" / "),adelanto:parseFloat(w2.adelanto.value)||0};
+      ["num","elab","proyecto"].forEach(function(k){o[k]=w1[k].value.trim()});o.terminos=w2.terminos.value.trim();go(i,o);
+    });btn("Cancelar",null,function(){ui=null;render()});
+    
+  }else if(mode==="del"){ask("¿Deseas eliminar permanentemente?",function(){go(i,null,"gone")});
+  }else if(mode==="cum"){ask("¿Iniciar cumplimiento del trabajo?",function(){go(i,{status:"cumplimiento",done:false})});
+  }else if(mode==="done"){ask("¿Marcar trabajo como FINALIZADO?",function(){go(i,{done:true},"gone")});
+  }else if(mode==="paid"){ask("¿Confirmas que el pago fue recibido?",function(){go(i,{status:"cobrado"})});
+  
+  }else if(i.status==="pedido"){
+    btn("A Desarrollo","p",function(){setUi(i,"dev")}); btn("Eliminar","d",function(){setUi(i,"del")});
+  }else if(i.status==="desarrollo"){
+    btn("A Cumplimiento","p",function(){setUi(i,"cum")}); btn("Atrás",null,function(){go(i,{status:"pedido"},"back")}); btn("Eliminar","d",function(){setUi(i,"del")});
+  }else if(i.status==="cumplimiento"){
+    if(!i.done){
+      d.appendChild(el("span","tag","En ejecución"));
+      btn("Finalizar Trabajo","p",function(){setUi(i,"done")}); btn("Atrás",null,function(){go(i,{status:"desarrollo"},"back")});
+    }else{
+      d.appendChild(el("span","tag debt2","Pago Pendiente"));
+      btn("Cobrar y Cerrar","p",function(){setUi(i,"paid")});
+    }
+  }else{
+    d.appendChild(el("span","tag","Cerrado")); btn("Eliminar","d",function(){setUi(i,"del")});
+  }
+  
+  if(a.children.length)d.appendChild(a);
+  return d;
+}
+
+/* ---------- Sincronización Google Apps Script ---------- */
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4uIn1M9RnLEOKmBqzgIZNpxu661MGWoSqbHnP3jrmIeBUXOmWTuAyz9q6yk9xOskD/exec"; 
+var isRegisterMode = false;
+
+function setGs(t, type){
+  var el = $("#gs");
+  el.textContent = t;
+  el.className = "gs-status " + (type||"");
+}
+
+function processData(r) {
+  registeredUsers = r.usuarios || [];
+  items = r.activos || []; 
+  clientesDb = r.clientes || []; 
+  
+  var dl = $("#clients-list");
+  dl.innerHTML = "";
+  clientesDb.forEach(function(c) {
+    var opt = el("option"); opt.value = c.name; dl.appendChild(opt);
+  });
+  n = items.length > 0 ? Math.max.apply(Math, items.map(function(o){return parseInt(o.id.replace('c',''))||0})) : 0;
+}
+
+$("#sync-btn").onclick = async function(){
+  var btn = $("#sync-btn");
+  btn.classList.add("spin");
+  setGs("Sincronizando...", "wait");
+  try{
+    var r = await fetch(SCRIPT_URL + "?t=" + Date.now()).then(function(x){return x.json()});
+    if(r.ok){
+      processData(r);
+      localStorage.setItem("arenado_cache", JSON.stringify(r));
+      render();
+      setGs("Actualizado", "ok");
+    } else {
+      setGs("Error de lectura", "err");
+    }
+  }catch(e){setGs("Error de red", "err");}
+  finally{ btn.classList.remove("spin"); }
+};
+
+// Carga Inicial con Caché Local (Muy rápida)
+async function gsInit(){
+  // 1. Intentar cargar desde caché para no bloquear al usuario
+  var cached = localStorage.getItem("arenado_cache");
+  if(cached) {
+    try {
+      processData(JSON.parse(cached));
+      var savedUser = localStorage.getItem("arenado_user");
+      var savedAccess = localStorage.getItem("arenado_access");
+      if(savedUser && savedAccess) {
+        loggedUser = savedUser;
+        loggedUserAccess = savedAccess;
+        $("#current-user").textContent = "Usuario: " + loggedUser + " (" + loggedUserAccess.split(" ")[0] + ")";
+        $("#login-overlay").style.display = "none";
+        render();
+      } else {
+        $("#l-btn").textContent = "Iniciar Sesión";
+        $("#l-btn").disabled = false;
       }
-      return ContentService.createTextOutput(JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);
-    }
+      setGs("Sincronizando en fondo...", "wait");
+    } catch(e) {}
+  }
+
+  // 2. Traer datos frescos de Google en segundo plano
+  try{
+    var res = await fetch(SCRIPT_URL + "?t=" + Date.now());
+    var text = await res.text();
+    var r;
+    try { r = JSON.parse(text); } catch(err) { throw new Error("PERMISOS_DENEGADOS"); }
     
-    if (tipo === "borrar_tarjeta") {
-      var sheetA = ss.getSheetByName("PEDIDOS ACTIVOS EN VIVO");
-      var id = data.id;
-      var dataA = sheetA.getRange("A1:A1000").getValues();
-      for(var i=dataA.length-1; i>=0; i--){
-        if(dataA[i][0] === id){
-          sheetA.deleteRow(i+1);
-          break;
-        }
-      }
-      return ContentService.createTextOutput(JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);
-    }
+    if(!r.ok) throw new Error(r.error);
     
-    if (tipo === "historico") {
-      var sheetH = ss.getSheetByName("HISTORICO DE TRABAJOS");
-      var rH = getNextEmptyRowByColumnB(sheetH);
-      sheetH.getRange(rH, 2, 1, data.row.length).setValues([data.row]);
-      return ContentService.createTextOutput(JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);
-    }
+    localStorage.setItem("arenado_cache", JSON.stringify(r));
+    processData(r);
     
-    if (tipo === "cliente") {
-      var sheetC = ss.getSheetByName("BASE DE CLIENTES");
-      var rC = getNextEmptyRowByColumnB(sheetC);
-      sheetC.getRange(rC, 2, 1, data.row.length).setValues([data.row]);
-      return ContentService.createTextOutput(JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);
+    if(loggedUser) render(); // Refrescar tablero si ya estaba logueado
+    
+    setGs("Conectado", "ok");
+    var lBtn = $("#l-btn");
+    if(lBtn.disabled) {
+      lBtn.textContent = "Iniciar Sesión";
+      lBtn.disabled = false;
     }
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({ok: false, error: err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }catch(e){
+    if(!cached) {
+      setGs("Sin Conexión", "err");
+      var errText = (e.message === "PERMISOS_DENEGADOS") 
+        ? "Bloqueo: Verifica que el acceso en Apps Script sea 'Cualquier persona'." 
+        : "Error al conectar. Verifica tu internet.";
+      $("#l-err").textContent = errText;
+      $("#l-btn").textContent = "Falló la conexión";
+    } else {
+      setGs("Modo Sin Conexión", "err");
+    }
   }
 }
+
+async function gsSaveCliente(i){
+  try{
+    var row=[i.name,i.ruc||"",i.atencion||"",i.tel||"",i.correo||""];
+    await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "cliente", row: row})});
+  }catch(e){}
+}
+
+async function gsSaveHistorico(i){
+  try{
+    var c = calc(i);
+    var totalItems = (i.items||[]).map(function(t){return t.qty+" "+t.und+" de "+t.work}).join(", ");
+    var row=[today(), i.num||"S/N", i.elab||loggedUser, i.proyecto||i.work||"Servicio general", (i.items||[]).reduce(function(a,t){return a+t.qty},0), totalItems, c.tot, c.adel];
+    await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "historico", row: row})});
+  }catch(e){}
+}
+
+async function gsSyncTarjeta(i){
+  i.gs="wait"; render();
+  try{
+    var r = await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "sync_tarjeta", tarjeta: i})}).then(x=>x.json());
+    if(r.ok) i.gs="ok"; else i.gs="err";
+  }catch(e){i.gs="err";}
+  render();
+}
+
+async function gsDeleteTarjeta(id){
+  try{
+    await fetch(SCRIPT_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({tipo: "borrar_tarjeta", id: id})});
+  }catch(e){}
+}
+
+/* Modal de Login */
+$("#l-toggle").onclick = function(){
+  isRegisterMode = !isRegisterMode;
+  $("#l-title").textContent = isRegisterMode ? "Crear Cuenta" : "Iniciar Sesión";
+  $("#l-desc").textContent = isRegisterMode ? "Añadir miembro al equipo" : "Acceso al sistema centralizado";
+  $("#l-btn").textContent = isRegisterMode ? "Crear y Entrar" : "Iniciar Sesión";
+  $("#register-fields").style.display = isRegisterMode ? "block" : "none";
+  $("#l-toggle").textContent = isRegisterMode ? "Ya tengo cuenta. Iniciar sesión." : "Crear nueva cuenta";
+  $("#l-err").textContent = "";
+};
+
+$("#l-btn").onclick = async function(){
+  var uInput = $("#l-user").value.trim().toUpperCase();
+  var pInput = $("#l-pass").value.trim();
+  
+  if(!uInput || !pInput){
+    $("#l-err").textContent = "Ingresa usuario y contraseña.";
+    return;
+  }
+
+  if(isRegisterMode){
+    $("#l-btn").disabled = true;
+    $("#l-btn").textContent = "Guardando...";
+    var accInput = $("#l-access").value;
+    
+    try{
+      await fetch(SCRIPT_URL, {
+        method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"},
+        body: JSON.stringify({tipo: "nuevo_usuario", user: uInput, pass: pInput, access: accInput})
+      });
+      registeredUsers.push({user: uInput, pass: pInput, access: accInput});
+      loggedUser = uInput;
+      loggedUserAccess = accInput;
+      localStorage.setItem("arenado_user", loggedUser);
+      localStorage.setItem("arenado_access", loggedUserAccess);
+      $("#current-user").textContent = "Usuario: " + uInput + " (" + accInput.split(" ")[0] + ")";
+      $("#login-overlay").style.display = "none";
+      render();
+    }catch(e){
+      $("#l-err").textContent = "Error al crear cuenta.";
+      $("#l-btn").disabled = false;
+      $("#l-btn").textContent = "Crear y Entrar";
+    }
+  } else {
+    var found = registeredUsers.find(function(u){return u.user === uInput && u.pass === pInput});
+    if(found){
+      loggedUser = found.user;
+      loggedUserAccess = found.access;
+      localStorage.setItem("arenado_user", loggedUser);
+      localStorage.setItem("arenado_access", loggedUserAccess);
+      $("#current-user").textContent = "Usuario: " + found.user + " (" + found.access.split(" ")[0] + ")";
+      $("#login-overlay").style.display = "none";
+      render();
+    } else {
+      $("#l-err").textContent = "Credenciales incorrectas.";
+    }
+  }
+};
+
+$("#current-user").onclick = function() {
+  if(confirm("¿Deseas cerrar sesión?")){
+    localStorage.removeItem("arenado_user");
+    localStorage.removeItem("arenado_access");
+    location.reload();
+  }
+}
+
+/* Plantilla Cobranza */
+function fillSel(){
+  var s=$("#sel"),p=pending(),old=s.value;s.textContent="";
+  if(p.length>1){var o=el("option",null,"Todos los pendientes ("+p.length+")");o.value="all";s.appendChild(o)}
+  p.forEach(function(i){var o=el("option",null,i.name+" — "+i.work);o.value=i.id;s.appendChild(o)});
+  if([].some.call(s.options,function(o){return o.value===old}))s.value=old;
+  showDoc();
+}
+function sel(){var p=pending(),v=$("#sel").value;return v==="all"||!v?p:p.filter(function(i){return i.id===v})}
+function showDoc(){var b=$("#docbox");b.textContent="";var l=sel();if(!l.length){b.appendChild(el("div","empty","No hay deudas pendientes."));return}b.appendChild(buildDoc(l))}
+function T(tag,cls,txt,kids){var e=el(tag,cls,txt);(kids||[]).forEach(function(k){e.appendChild(k)});return e}
+function buildDoc(l){
+  var one=l.length===1,x=l[0],S={sub:0,igv:0,tot:0,adel:0,sal:0};
+  l.forEach(function(i){var c=calc(i);for(var k in S)S[k]+=c[k]});
+  var d=el("div","doc");
+  d.appendChild(T("div","dh",null,[T("div","bdg",null,[T("b",null,"ARENADO"),T("small",null,"24 HORAS")]),
+    T("div","c",null,[T("b",null,E.name),T("div",null,"RUC :"+E.ruc),T("div",null,"Oficina Principal: "+E.ofi),T("div",null,"Sede 1: "+E.sede)])]));
+  d.appendChild(el("div","pn","Presupuesto "+(one&&x.num?x.num:"—")+"  ·  ESTADO DE CUENTA / COBRANZA"));
+  function P(a,b){return T("p",null,null,[T("span",null,a),document.createTextNode(b||"")])}
+  d.appendChild(T("div","inf",null,[
+    T("div","r",null,[P("Sres:",one?x.name:"Varios"),P("RUC:",one?x.ruc:""),P("Encargado:",one?x.atencion:""),P("Telf.",one?x.tel:""),P("Correo:",one?x.correo:""),P("Proyecto:",one?(x.proyecto||x.work):"Varios")]),
+    T("div","r",null,[P("Fecha",today().split(" ")[0]),P("Términos",one?x.terminos:""),P("Elaborado",one?x.elab:""),P("Telf",E.telf)])]));
+  var t=el("table"),th=el("tr");["Item","Descripción","Cantidad","Und.","P. U.","P.P"].forEach(function(h){th.appendChild(el("th",null,h))});t.appendChild(th);
+  l.forEach(function(i,k){
+    var tb=el("tr","tb"),c=calc(i);tb.appendChild(el("td",null,String(k+1)));var tt=el("td",null,(one?"":i.name+" · ")+(i.proyecto||i.items[0].work));tt.colSpan=5;tb.appendChild(tt);t.appendChild(tb);
+    i.items.forEach(function(it){var r=el("tr");r.appendChild(el("td"));r.appendChild(el("td",null,it.work));
+      [num(it.qty),it.und,"S/ "+num(it.pu),"S/ "+num(it.qty*it.pu)].forEach(function(v){r.appendChild(el("td","n",v))});t.appendChild(r)});
+  });
+  [["SUBTOTAL",S.sub],["IGV",S.igv],["TOTAL",S.tot],["ADELANTO RECIBIDO",S.adel],["SALDO A PAGAR",S.sal]].forEach(function(r,j){
+    var tr=el("tr","tot"+(j>2?" s":"")),a=el("td","l",r[0]);a.colSpan=5;tr.appendChild(a);tr.appendChild(el("td","v",money(r[1])));t.appendChild(tr)});
+  d.appendChild(t);
+  var cs=el("div","cons");cs.appendChild(T("u",null,"Consideraciones de la oferta:"));
+  E.consid.forEach(function(c,j){cs.appendChild(el("p",null,String.fromCharCode(97+j)+") "+c))});d.appendChild(cs);
+  d.appendChild(el("div","cu","CUENTAS DE DEPOSITO"));
+  d.appendChild(T("div","ac",null,[T("div","r",null,E.cuentas.map(function(c){return el("p",null,c)})),el("i",null,"Dpto. Costos y presupuestos")]));
+  d.appendChild(el("div","cf","¡CONFIA EN LOS EXPERTOS!"));
+  return d;
+}
+$("#sum").onclick=function(){fillSel();$("#panel").classList.add("open");setTimeout(function(){$("#panel").scrollIntoView({behavior:"smooth",block:"start"})},200)};
+$("#sel").onchange=showDoc;
+$("#hide").onclick=function(){$("#panel").classList.remove("open")};
+$("#print").onclick=function(){try{window.print()}catch(e){}};
+$("#copy").onclick=function(){
+  var b=$("#copy"),l=sel();if(!l.length)return;var t="Resumen de deudas",ok=function(){b.textContent="¡Copiado!";setTimeout(function(){b.textContent="Copiar Texto"},1500)};
+  var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();ok();
+};
+
+$("#add").onclick=function(){
+  if(busy)return;
+  var i={id:"c"+(++n),name:"",status:"pedido"};
+  items.unshift(i);
+  ui={id:i.id,mode:"name"};
+  render(i.id);
+  setTimeout(()=> { document.querySelector('.card.in input').focus(); }, 300);
+};
+
+gsInit();
+})();
+</script>
+</body>
+</html>
